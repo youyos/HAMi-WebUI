@@ -99,3 +99,26 @@ To make it easier for your PR to receive reviews, consider that reviewers will n
 * Follow [good coding guidelines](https://github.com/golang/go/wiki/CodeReviewComments)
 * Write [good commit messages](https://chris.beams.io/posts/git-commit/)
 * Break large changes into a logical series of smaller patches which individually make easily understandable changes, and in aggregate solve a broader issue
+# Contributing to HAMi-WebUI
+
+Thank you for your interest in contributing to HAMi-WebUI! We welcome all people who want to contribute in a healthy and constructive manner within our community.
+
+This document is a guide to help you through the process of contributing to HAMi-WebUI.
+
+## Become a contributor
+
+You can contribute to HAMi-WebUI in several ways. Here are some examples:
+
+- Contribute to the HAMi-WebUI codebase.
+- Report and triage bugs.
+- Write technical documentation and blog posts, for users and contributors.
+- Help others by answering questions about HAMi-WebUI.
+
+
+For more ways to contribute, check out the [Open Source Guides](https://opensource.guide/how-to-contribute/).
+
+### Report bugs
+
+Before submitting a new issue, try to make sure someone hasn't already reported the problem. Look through the [existing issues](https://github.com/Project-HAMi/HAMi-UI/issues) for similar issues.
+
+Report a bug by submitting a [bug report](https://github.com/Project-HAMi/HAMi-UI/issues/new?labels=type%3A+bug&template=1-bug_report.md). Make sure that you provide as much information as possible on how to reproduce the bug.
