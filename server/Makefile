@@ -69,7 +69,8 @@ save-image:
 
 # 6. Debugging and Testing
 .PHONY: run
-run: install-deps generate run-debug
+#run: install-deps generate run-debug
+run:  run-debug
 
 .PHONY: run-debug
 run-debug:
@@ -90,7 +91,8 @@ clean-build:
 
 # 8. Complete build workflow
 .PHONY: build
-build: install-deps generate build-linux
+#build: install-deps generate build-linux
+build: install-deps generate
 
 # 9. Release workflow
 .PHONY: release

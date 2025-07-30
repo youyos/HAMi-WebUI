@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
 	listerscorev1 "k8s.io/client-go/listers/core/v1"
@@ -26,6 +27,7 @@ type nodeRepo struct {
 	nodeNotify chan struct{}
 	nodeLister listerscorev1.NodeLister
 	nodes      map[k8stypes.UID]*biz.Node
+	allNodes   []*biz.Node
 	log        *log.Helper
 	mutex      sync.RWMutex
 	providers  []provider.Provider
@@ -71,13 +73,14 @@ func (r *nodeRepo) updateLocalNodes() {
 				if _, ok := n[node.UID]; !ok {
 					n[node.UID] = bizNode
 				}
+
 				devices, err := p.FetchDevices(node)
 				if err != nil {
 					r.log.Warnf("list devices info error: %s", err)
 					continue
 				}
 				for _, device := range devices {
-					n[node.UID].Devices = append(bizNode.Devices, &biz.DeviceInfo{
+					bizNode.Devices = append(bizNode.Devices, &biz.DeviceInfo{
 						Index:    int(device.Index),
 						Id:       device.ID,
 						AliasId:  device.AliasId,
@@ -97,6 +100,18 @@ func (r *nodeRepo) updateLocalNodes() {
 			}
 		}
 		r.nodes = n
+
+		var all []*biz.Node
+		allNodes, _ := r.nodeLister.List(labels.Everything())
+		for _, node := range allNodes {
+			bizNode := r.fetchNodeInfo(node)
+			gpuNode := n[k8stypes.UID(bizNode.Uid)]
+			if gpuNode != nil {
+				bizNode.Devices = gpuNode.Devices
+			}
+			all = append(all, bizNode)
+		}
+		r.allNodes = all
 	}
 }
 
@@ -128,6 +143,8 @@ func (r *nodeRepo) onDeletedNode(obj interface{}) {
 }
 
 func (r *nodeRepo) fetchNodeInfo(node *corev1.Node) *biz.Node {
+	//b, _ := json.MarshalIndent(node, "", "  ")
+	//fmt.Println(string(b))
 	n := &biz.Node{IsSchedulable: !node.Spec.Unschedulable}
 	for _, addr := range node.Status.Addresses {
 		if addr.Type == corev1.NodeInternalIP {
@@ -150,12 +167,48 @@ func (r *nodeRepo) fetchNodeInfo(node *corev1.Node) *biz.Node {
 	n.KubeProxyVersion = node.Status.NodeInfo.KubeProxyVersion
 	n.Architecture = strings.ToUpper(node.Status.NodeInfo.Architecture)
 	n.CreationTimestamp = node.CreationTimestamp.Format("2006-01-02 15:04:05")
+
+	capacity := node.Status.Capacity
+	allocatable := node.Status.Allocatable
+	// CPU 核数
+	if cpu, ok := capacity[corev1.ResourceCPU]; ok {
+		n.CPUCores = cpu.Value()
+	}
+
+	// GPU 数量（nvidia.com/gpu）
+	//if gpu, ok := capacity["nvidia.com/gpu"]; ok {
+	//	n.GPUCount = gpu.Value()
+	//}
+
+	// 总内存
+	if mem, ok := capacity[corev1.ResourceMemory]; ok {
+		n.TotalMemory = mem.Value()
+	}
+
+	// 可用内存
+	if mem, ok := allocatable[corev1.ResourceMemory]; ok {
+		n.AvailableMemory = mem.Value()
+	}
+
+	// 磁盘总大小（临时存储）
+	if disk, ok := capacity[corev1.ResourceEphemeralStorage]; ok {
+		n.DiskTotal = disk.Value()
+	}
+
 	return n
 }
 
 func (r *nodeRepo) ListAll(context.Context) ([]*biz.Node, error) {
 	var nodeList []*biz.Node
 	for _, node := range r.nodes {
+		nodeList = append(nodeList, node)
+	}
+	return nodeList, nil
+}
+
+func (r *nodeRepo) ListAllV2(context.Context) ([]*biz.Node, error) {
+	var nodeList []*biz.Node
+	for _, node := range r.allNodes {
 		nodeList = append(nodeList, node)
 	}
 	return nodeList, nil
