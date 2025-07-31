@@ -188,6 +188,59 @@ components:
                     type: string
                 nodeName:
                     type: string
+        PoolNodeReply:
+            type: object
+            properties:
+                ip:
+                    type: string
+                isSchedulable:
+                    type: boolean
+                isReady:
+                    type: boolean
+                type:
+                    type: array
+                    items:
+                        type: string
+                vgpuUsed:
+                    type: integer
+                    format: int32
+                vgpuTotal:
+                    type: integer
+                    format: int32
+                coreUsed:
+                    type: integer
+                    format: int32
+                coreTotal:
+                    type: string
+                memoryUsed:
+                    type: string
+                memoryTotal:
+                    type: string
+                uid:
+                    type: string
+                name:
+                    type: string
+                cardCnt:
+                    type: integer
+                    format: int32
+                osImage:
+                    type: string
+                operatingSystem:
+                    type: string
+                kernelVersion:
+                    type: string
+                containerRuntimeVersion:
+                    type: string
+                kubeletVersion:
+                    type: string
+                kubeProxyVersion:
+                    type: string
+                architecture:
+                    type: string
+                creationTimestamp:
+                    type: string
+                diskSize:
+                    type: string
         ResourcePoolCreateRequest:
             type: object
             properties:
@@ -205,11 +258,10 @@ components:
         ResourcePoolDetailResponse:
             type: object
             properties:
-                code:
-                    type: integer
-                    format: int32
-                message:
-                    type: string
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PoolNodeReply'
         ResourcePoolListData:
             type: object
             properties:

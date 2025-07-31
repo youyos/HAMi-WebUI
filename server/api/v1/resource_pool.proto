@@ -95,13 +95,37 @@ message ResourcePoolDeleteRequest {
   int64 pool_id = 1;
 }
 
+message PoolNodeReply {
+  string ip = 1;
+  bool is_schedulable = 2;
+  bool is_ready = 3;
+  repeated string type = 4;
+  int32 vgpu_used = 5;
+  int32 vgpu_total = 6;
+  int32 core_used = 7;
+  int64 core_total = 8;
+  int64 memory_used = 9;
+  int64 memory_total = 10;
+  string uid = 11;
+  string name = 12;
+  int32 card_cnt = 13;
+  string os_image = 14;
+  string operating_system = 15;
+  string kernel_version = 16;
+  string container_runtime_version = 17;
+  string kubelet_version = 18;
+  string kube_proxy_version = 19;
+  string architecture = 20;
+  string creation_timestamp = 21;
+  int64 disk_size = 22;
+}
+
 message ResourcePoolDetailRequest {
   int64 pool_id = 1;
 }
 
 message ResourcePoolDetailResponse {
-  int32 code = 1;
-  string message = 2;
+  repeated PoolNodeReply list = 1;
 }
 
 message ResourcePoolListData{

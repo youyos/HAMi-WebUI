@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/prometheus/common/model"
 	"log"
+	"sort"
 	pb "vgpu/api/v1"
 	"vgpu/internal/biz"
 	"vgpu/internal/database"
@@ -142,14 +144,36 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 
 func (s *ResourcePoolService) GetDetail(ctx context.Context, req *pb.ResourcePoolDetailRequest) (*pb.ResourcePoolDetailResponse, error) {
 	log.Println("GetResourcePoolDetail", req)
+	poolNodes, err := database.QueryNodesByPoolId(req.PoolId)
+	if err != nil {
+		return nil, err
+	}
+	if len(poolNodes) == 0 {
+		return &pb.ResourcePoolDetailResponse{}, nil
+	}
+	log.Println("GetResourcePoolDetail success", poolNodes)
+	var res = &pb.ResourcePoolDetailResponse{List: []*pb.PoolNodeReply{}}
+	nodes, err := s.uc.ListAllNodesV2(ctx)
 
-	gpuMemory := fmt.Sprintf(prometheus.GpuMemoryQuery, "k8s2")
-	fmt.Println("gpuMemory", s.simpleQuery(ctx, gpuMemory))
+	for _, poolNode := range poolNodes {
+		b1, _ := json.MarshalIndent(poolNode, "", "  ")
+		fmt.Println(string(b1))
+		node := s.filterNode(poolNode.NodeIp, nodes)
+		if node == nil {
+			continue
+		}
+		nodeReply, err := s.buildNodeReply(ctx, node)
+		if err != nil {
+			return nil, err
+		}
+		res.List = append(res.List, nodeReply)
+	}
 
-	diskNumQuery := fmt.Sprintf(prometheus.NumberOfDiskQuery, "k8s1")
+	sort.SliceStable(res.List, func(i, j int) bool {
+		return res.List[i].Name < res.List[j].Name
+	})
 
-	fmt.Println("diskNum", s.simpleQuery(ctx, diskNumQuery))
-	return &pb.ResourcePoolDetailResponse{Code: 1, Message: "成功11111"}, nil
+	return res, nil
 }
 
 func (s *ResourcePoolService) GetAvailableNodes(ctx context.Context, req *pb.AvailableNodesRequest) (*pb.AvailableNodesResponse, error) {
@@ -182,8 +206,6 @@ func (s *ResourcePoolService) getK8sNodes(ctx context.Context) map[string]*biz.N
 	m := make(map[string]*biz.Node)
 	for _, node := range nodes {
 		node.GPUCount = int64(len(node.Devices))
-		b, _ := json.MarshalIndent(node, "", "  ")
-		fmt.Println(string(b))
 		m[node.Name] = node
 	}
 	return m
@@ -203,4 +225,55 @@ func (s *ResourcePoolService) simpleQuery(ctx context.Context, query string) int
 	// 提取第一个样本的值（24576）
 	sampleValue := int64(vector[0].Value)
 	return sampleValue
+}
+
+func (s *ResourcePoolService) filterNode(nodeIp string, nodes []*biz.Node) *biz.Node {
+	for _, node := range nodes {
+		b, _ := json.MarshalIndent(node, "", "  ")
+		fmt.Println(string(b))
+		if node.IP == nodeIp {
+			return node
+		}
+	}
+
+	return nil
+}
+
+func (s *ResourcePoolService) buildNodeReply(ctx context.Context, node *biz.Node) (*pb.PoolNodeReply, error) {
+	nodeReply := &pb.PoolNodeReply{
+		Name:                    node.Name,
+		Uid:                     node.Uid,
+		Ip:                      node.IP,
+		IsSchedulable:           node.IsSchedulable,
+		IsReady:                 node.IsReady,
+		OsImage:                 node.OSImage,
+		OperatingSystem:         node.OperatingSystem,
+		KernelVersion:           node.KernelVersion,
+		ContainerRuntimeVersion: node.ContainerRuntimeVersion,
+		KubeletVersion:          node.KubeletVersion,
+		KubeProxyVersion:        node.KubeProxyVersion,
+		Architecture:            node.Architecture,
+		CreationTimestamp:       node.CreationTimestamp,
+		CoreTotal:               node.CPUCores,
+		MemoryTotal:             node.TotalMemory,
+		DiskSize:                node.DiskTotal,
+	}
+
+	for _, device := range node.Devices {
+		nodeReply.Type = append(nodeReply.Type, device.Type)
+		nodeReply.VgpuTotal += device.Count
+		nodeReply.CoreTotal += int64(device.Devcore)
+		nodeReply.MemoryTotal += int64(device.Devmem)
+		vGPU, core, memory, err := s.pod.StatisticsByDeviceId(ctx, device.AliasId)
+		if err == nil {
+			nodeReply.VgpuUsed += vGPU
+			nodeReply.CoreUsed += core
+			nodeReply.MemoryUsed += int64(memory)
+		}
+	}
+
+	nodeReply.Type = arrutil.Unique(nodeReply.Type)
+	nodeReply.CardCnt = int32(len(node.Devices))
+
+	return nodeReply, nil
 }
