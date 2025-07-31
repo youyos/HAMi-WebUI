@@ -13,3 +13,5 @@ RUN make build TARGET_ARCH=${TARGETARCH}
 FROM --platform=$TARGETPLATFORM debian:stable-slim
 
 COPY --from=builder /src/build/ /apps/
+
+COPY --from=builder /src /src
