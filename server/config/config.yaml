@@ -3,13 +3,16 @@ server:
     addr: 0.0.0.0:8000
     timeout: 1s
   grpc:
-    addr: 0.0.0.0:9000
+    addr: 0.0.0.0:9001
     timeout: 1s
 prometheus:
-  address: http://localhost:9090
+  address: http://172.16.100.14:29090
   timeout: 1m
 node_selectors:
   NVIDIA: gpu=on
   Ascend: ascend=on
   DCU: dcu=on
   MLU: mlu=on
+database:
+  driver: mysql
+  dataSourceName: testeducoder:TEST@123@tcp(testeducoder-public.mysql.polardb.rds.aliyuncs.com:3306)/hami?parseTime=true&loc=Local

@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package api.v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/struct.proto";
+
+
+option go_package = "vgpu/api/v1;v1";
+
+service ResourcePool {
+
+  rpc Create (ResourcePoolCreateRequest) returns (BaseResponse) {
+    option (google.api.http) = {
+      post: "/v1/resource/pool/create",
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "资源池创建";
+    };
+  }
+
+  rpc Update (ResourcePoolUpdateRequest) returns (BaseResponse) {
+    option (google.api.http) = {
+      post: "/v1/resource/pool/update",
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "资源池更新";
+    };
+  }
+
+  rpc Delete (ResourcePoolDeleteRequest) returns (BaseResponse) {
+    option (google.api.http) = {
+      post: "/v1/resource/pool/delete",
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "资源池删除";
+    };
+  }
+
+  rpc List (ResourcePoolListRequest) returns (ResourcePoolListResponse) {
+    option (google.api.http) = {
+      get: "/v1/resource/pool/list"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "资源池列表";
+    };
+  }
+
+  rpc GetDetail (ResourcePoolDetailRequest) returns (ResourcePoolDetailResponse) {
+    option (google.api.http) = {
+      get: "/v1/resource/pool/detail"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "资源池详情";
+    };
+  }
+
+  rpc GetAvailableNodes (AvailableNodesRequest) returns (AvailableNodesResponse) {
+    option (google.api.http) = {
+      get: "/v1/available/nodes"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "可用节点列表";
+    };
+  }
+}
+
+message BaseResponse {
+  int32 code = 1;
+  string message = 2;
+  google.protobuf.Struct data = 3;
+}
+
+message Nodes {
+  string node_ip = 1;
+  string node_name = 2;
+}
+
+message ResourcePoolCreateRequest {
+  string pool_name = 1;
+  repeated Nodes nodes = 2;
+}
+
+message ResourcePoolUpdateRequest {
+  int64 pool_id = 1;
+  string pool_name = 2;
+  repeated Nodes nodes = 3;
+}
+
+message ResourcePoolDeleteRequest {
+  int64 pool_id = 1;
+}
+
+message PoolNodeReply {
+  string ip = 1;
+  bool is_schedulable = 2;
+  bool is_ready = 3;
+  repeated string type = 4;
+  int32 vgpu_used = 5;
+  int32 vgpu_total = 6;
+  int32 core_used = 7;
+  int64 core_total = 8;
+  int64 memory_used = 9;
+  int64 memory_total = 10;
+  string uid = 11;
+  string name = 12;
+  int32 card_cnt = 13;
+  string os_image = 14;
+  string operating_system = 15;
+  string kernel_version = 16;
+  string container_runtime_version = 17;
+  string kubelet_version = 18;
+  string kube_proxy_version = 19;
+  string architecture = 20;
+  string creation_timestamp = 21;
+  int64 disk_size = 22;
+}
+
+message ResourcePoolDetailRequest {
+  int64 pool_id = 1;
+}
+
+message ResourcePoolDetailResponse {
+  repeated PoolNodeReply list = 1;
+}
+
+message ResourcePoolListData{
+  int64 pool_id = 1;
+  string pool_name = 2;
+  int64 cpu_cores = 3;
+  int64 node_num = 4;
+  int64 gpu_num = 5;
+  int64 available_memory = 6;//kb
+  int64 total_memory = 7; // kb
+  int64 disk_size = 8;
+}
+
+message ResourcePoolListRequest {
+
+}
+
+message ResourcePoolListResponse {
+  repeated ResourcePoolListData data = 1;
+}
+
+message AvailableNodesRequest{
+
+}
+
+message AvailableNodesResponse{
+  repeated AvailableNodesInfo data = 1;
+}
+
+message AvailableNodesInfo{
+  string node_name = 1;
+  int64 cpu_cores = 2;
+  int64 gpu_num = 3;
+  int64 gpu_memory = 4;
+  int64 total_memory = 5; // byte
+  int64 disk_size = 6;
+  string node_ip = 7;
+}
+
+
+

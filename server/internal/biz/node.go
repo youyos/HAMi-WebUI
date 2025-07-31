@@ -21,6 +21,12 @@ type Node struct {
 	Architecture            string
 	CreationTimestamp       string
 	Devices                 []*DeviceInfo
+	CPUCores                int64 // CPU 核数
+	GPUCount                int64 // 显卡数量
+	TotalMemory             int64 // 总内存（字节）
+	AvailableMemory         int64 // 可用内存（字节）
+	DiskTotal               int64 // 磁盘总大小（字节）
+	StorageNum              int64
 }
 
 type DeviceInfo struct {
@@ -48,6 +54,7 @@ type DeviceTotal struct {
 
 type NodeRepo interface {
 	ListAll(context.Context) ([]*Node, error)
+	ListAllV2(context.Context) ([]*Node, error)
 	GetNode(context.Context, string) (*Node, error)
 	ListAllDevices(context.Context) ([]*DeviceInfo, error)
 	FindDeviceByAliasId(string) (*DeviceInfo, error)
@@ -64,6 +71,10 @@ func NewNodeUsecase(repo NodeRepo, logger log.Logger) *NodeUsecase {
 
 func (uc *NodeUsecase) ListAllNodes(ctx context.Context) ([]*Node, error) {
 	return uc.repo.ListAll(ctx)
+}
+
+func (uc *NodeUsecase) ListAllNodesV2(ctx context.Context) ([]*Node, error) {
+	return uc.repo.ListAllV2(ctx)
 }
 
 func (uc *NodeUsecase) GetNode(ctx context.Context, nodeName string) (*Node, error) {

@@ -20,6 +20,7 @@ func NewHTTPServer(c *conf.Bootstrap,
 	card *service.CardService,
 	ctr *service.ContainerService,
 	monitor *service.MonitorService,
+	resourcePool *service.ResourcePoolService,
 	exporter *exporter.MetricsGenerator,
 	logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
@@ -42,6 +43,7 @@ func NewHTTPServer(c *conf.Bootstrap,
 	v1.RegisterCardHTTPServer(srv, card)
 	v1.RegisterContainerHTTPServer(srv, ctr)
 	v1.RegisterMonitorHTTPServer(srv, monitor)
+	v1.RegisterResourcePoolHTTPServer(srv, resourcePool)
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	srv.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		exporter.GenerateMetrics(r.Context())

@@ -3,8 +3,317 @@
 
 openapi: 3.0.3
 info:
-    title: ""
+    title: ResourcePool API
     version: 0.0.1
-paths: {}
+paths:
+    /v1/available/nodes:
+        get:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_GetAvailableNodes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AvailableNodesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/create:
+        post:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResourcePoolCreateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/delete:
+        post:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_Delete
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResourcePoolDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/detail:
+        get:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_GetDetail
+            parameters:
+                - name: poolId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResourcePoolDetailResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/list:
+        get:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_List
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResourcePoolListResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/update:
+        post:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_Update
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResourcePoolUpdateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
-    schemas: {}
+    schemas:
+        AvailableNodesInfo:
+            type: object
+            properties:
+                nodeName:
+                    type: string
+                cpuCores:
+                    type: string
+                gpuNum:
+                    type: string
+                gpuMemory:
+                    type: string
+                totalMemory:
+                    type: string
+                diskSize:
+                    type: string
+                nodeIp:
+                    type: string
+        AvailableNodesResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AvailableNodesInfo'
+        BaseResponse:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
+                data:
+                    type: object
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Nodes:
+            type: object
+            properties:
+                nodeIp:
+                    type: string
+                nodeName:
+                    type: string
+        PoolNodeReply:
+            type: object
+            properties:
+                ip:
+                    type: string
+                isSchedulable:
+                    type: boolean
+                isReady:
+                    type: boolean
+                type:
+                    type: array
+                    items:
+                        type: string
+                vgpuUsed:
+                    type: integer
+                    format: int32
+                vgpuTotal:
+                    type: integer
+                    format: int32
+                coreUsed:
+                    type: integer
+                    format: int32
+                coreTotal:
+                    type: string
+                memoryUsed:
+                    type: string
+                memoryTotal:
+                    type: string
+                uid:
+                    type: string
+                name:
+                    type: string
+                cardCnt:
+                    type: integer
+                    format: int32
+                osImage:
+                    type: string
+                operatingSystem:
+                    type: string
+                kernelVersion:
+                    type: string
+                containerRuntimeVersion:
+                    type: string
+                kubeletVersion:
+                    type: string
+                kubeProxyVersion:
+                    type: string
+                architecture:
+                    type: string
+                creationTimestamp:
+                    type: string
+                diskSize:
+                    type: string
+        ResourcePoolCreateRequest:
+            type: object
+            properties:
+                poolName:
+                    type: string
+                nodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Nodes'
+        ResourcePoolDeleteRequest:
+            type: object
+            properties:
+                poolId:
+                    type: string
+        ResourcePoolDetailResponse:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PoolNodeReply'
+        ResourcePoolListData:
+            type: object
+            properties:
+                poolId:
+                    type: string
+                poolName:
+                    type: string
+                cpuCores:
+                    type: string
+                nodeNum:
+                    type: string
+                gpuNum:
+                    type: string
+                availableMemory:
+                    type: string
+                totalMemory:
+                    type: string
+                diskSize:
+                    type: string
+        ResourcePoolListResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ResourcePoolListData'
+        ResourcePoolUpdateRequest:
+            type: object
+            properties:
+                poolId:
+                    type: string
+                poolName:
+                    type: string
+                nodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Nodes'
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+tags:
+    - name: ResourcePool
