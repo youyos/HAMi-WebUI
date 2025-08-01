@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/prometheus/common/model"
-	"log"
 	"sort"
 	pb "vgpu/api/v1"
 	"vgpu/internal/biz"
@@ -29,7 +29,7 @@ func NewResourcePoolService(uc *biz.NodeUsecase, pod *biz.PodUseCase, summary *b
 }
 
 func (s *ResourcePoolService) Create(ctx context.Context, req *pb.ResourcePoolCreateRequest) (*pb.BaseResponse, error) {
-	log.Println("CreateResourcePool called", req)
+	log.Info("CreateResourcePool called", req)
 	poolName := req.PoolName
 
 	if database.ExistsResourcePoolByPoolName(poolName) {
@@ -54,12 +54,12 @@ func (s *ResourcePoolService) Create(ctx context.Context, req *pb.ResourcePoolCr
 		return &pb.BaseResponse{Code: -1, Message: poolName + "创建资源池失败"}, nil
 	}
 
-	log.Println("CreateResourcePool success", poolName, rows)
+	log.Info("CreateResourcePool success", poolName, rows)
 	return &pb.BaseResponse{Code: 1, Message: "成功"}, nil
 }
 
 func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUpdateRequest) (*pb.BaseResponse, error) {
-	log.Println("UpdateResourcePool called", req)
+	log.Info("UpdateResourcePool called", req)
 	poolId := req.PoolId
 	resourcePool, err := database.QueryResourcePoolById(poolId)
 	if err != nil {
@@ -92,25 +92,25 @@ func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUp
 }
 
 func (s *ResourcePoolService) Delete(ctx context.Context, req *pb.ResourcePoolDeleteRequest) (*pb.BaseResponse, error) {
-	log.Println("DeleteResourcePool called", req)
+	log.Info("DeleteResourcePool called", req)
 	poolId := req.PoolId
 	num, err := database.DeleteNodesByPoolId(poolId)
 	if err != nil {
 		return &pb.BaseResponse{Code: -1, Message: "删除资源池失败"}, nil
 	}
 
-	log.Println("DeleteNodes success", poolId, num)
+	log.Infof("DeleteNodes success, poolId: %d, 影响行数: %d", poolId, num)
 	num, err = database.DeleteResourcePoolById(poolId)
 	if err != nil {
 		return &pb.BaseResponse{Code: -1, Message: "删除资源池失败"}, nil
 	}
 
-	log.Println("DeleteResourcePool success", poolId, num)
+	log.Infof("DeleteResourcePool success poolId: %d, 影响行数: %d", poolId, num)
 	return &pb.BaseResponse{Code: 1, Message: "成功"}, nil
 }
 
 func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolListRequest) (*pb.ResourcePoolListResponse, error) {
-	log.Println("GetResourcePoolList", req)
+	log.Info("GetResourcePoolList", req)
 
 	resourcePoolList, err := database.QueryResourcePoolListAll()
 	if err != nil {
@@ -143,7 +143,7 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 }
 
 func (s *ResourcePoolService) GetDetail(ctx context.Context, req *pb.ResourcePoolDetailRequest) (*pb.ResourcePoolDetailResponse, error) {
-	log.Println("GetResourcePoolDetail", req)
+	log.Info("GetResourcePoolDetail", req)
 	poolNodes, err := database.QueryNodesByPoolId(req.PoolId)
 	if err != nil {
 		return nil, err
@@ -151,13 +151,13 @@ func (s *ResourcePoolService) GetDetail(ctx context.Context, req *pb.ResourcePoo
 	if len(poolNodes) == 0 {
 		return &pb.ResourcePoolDetailResponse{}, nil
 	}
-	log.Println("GetResourcePoolDetail success", poolNodes)
+	log.Info("GetResourcePoolDetail success", poolNodes)
 	var res = &pb.ResourcePoolDetailResponse{List: []*pb.PoolNodeReply{}}
 	nodes, err := s.uc.ListAllNodesV2(ctx)
 
 	for _, poolNode := range poolNodes {
 		b1, _ := json.MarshalIndent(poolNode, "", "  ")
-		fmt.Println(string(b1))
+		log.Info(string(b1))
 		node := s.filterNode(poolNode.NodeIp, nodes)
 		if node == nil {
 			continue
@@ -177,7 +177,7 @@ func (s *ResourcePoolService) GetDetail(ctx context.Context, req *pb.ResourcePoo
 }
 
 func (s *ResourcePoolService) GetAvailableNodes(ctx context.Context, req *pb.AvailableNodesRequest) (*pb.AvailableNodesResponse, error) {
-	log.Println("GetAvailableNodes", req)
+	log.Info("GetAvailableNodes", req)
 
 	var data []*pb.AvailableNodesInfo
 	k8sNodes := s.getK8sNodes(ctx)
@@ -230,7 +230,7 @@ func (s *ResourcePoolService) simpleQuery(ctx context.Context, query string) int
 func (s *ResourcePoolService) filterNode(nodeIp string, nodes []*biz.Node) *biz.Node {
 	for _, node := range nodes {
 		b, _ := json.MarshalIndent(node, "", "  ")
-		fmt.Println(string(b))
+		log.Info(string(b))
 		if node.IP == nodeIp {
 			return node
 		}

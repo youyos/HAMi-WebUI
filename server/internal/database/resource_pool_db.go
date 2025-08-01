@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
+	"github.com/go-kratos/kratos/v2/log"
 	"strings"
 	"time"
 )
@@ -33,7 +33,7 @@ func ExistsResourcePoolByPoolName(poolName string) bool {
 	var count int
 	err := db.QueryRow("SELECT count(1) FROM resource_pool WHERE pool_name = ?", poolName).Scan(&count)
 	if err != nil {
-		log.Printf("Query failed: %v", err)
+		log.Infof("Query failed: %v", err)
 		return false
 	}
 
@@ -46,10 +46,10 @@ func QueryResourcePoolById(poolId int64) (*ResourcePool, error) {
 		Scan(&pool.Id, &pool.PoolName, &pool.CreateTime, &pool.UpdateTime)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("No record found with id %d", poolId)
+			log.Infof("No record found with id %d", poolId)
 			return nil, nil
 		}
-		log.Printf("Query failed: %v", err)
+		log.Infof("Query failed: %v", err)
 		return nil, err
 	}
 
@@ -58,9 +58,9 @@ func QueryResourcePoolById(poolId int64) (*ResourcePool, error) {
 
 func QueryResourcePoolListAll() ([]*ResourcePool, error) {
 	// 执行查询
-	rows, err := db.Query("SELECT id, pool_name, create_time, update_time FROM resource_pool")
+	rows, err := db.Query("SELECT id, pool_name, create_time, update_time FROM resource_pool order by id asc")
 	if err != nil {
-		log.Printf("Query failed: %v", err)
+		log.Infof("Query failed: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -73,7 +73,7 @@ func QueryResourcePoolListAll() ([]*ResourcePool, error) {
 		var pool ResourcePool
 		err := rows.Scan(&pool.Id, &pool.PoolName, &pool.CreateTime, &pool.UpdateTime)
 		if err != nil {
-			log.Printf("Scan failed: %v", err)
+			log.Infof("Scan failed: %v", err)
 			return nil, err
 		}
 		pools = append(pools, &pool)
@@ -91,7 +91,7 @@ func QueryNodesByPoolId(poolId int64) ([]*Nodes, error) {
 	// 执行查询
 	rows, err := db.Query("SELECT id, node_name, node_ip, create_time, update_time FROM nodes where pool_id = ?", poolId)
 	if err != nil {
-		log.Printf("Query failed: %v", err)
+		log.Infof("Query failed: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -104,7 +104,7 @@ func QueryNodesByPoolId(poolId int64) ([]*Nodes, error) {
 		var node Nodes
 		err := rows.Scan(&node.Id, &node.NodeName, &node.NodeIp, &node.CreateTime, &node.UpdateTime)
 		if err != nil {
-			log.Printf("Scan failed: %v", err)
+			log.Infof("Scan failed: %v", err)
 			return nil, err
 		}
 		nodes = append(nodes, &node)
@@ -123,13 +123,13 @@ func InsertResourcePool(poolName string) (int64, error) {
 
 	result, err := db.Exec(querySql, poolName)
 	if err != nil {
-		log.Printf("Failed to insert record: %v", err)
+		log.Infof("Failed to insert record: %v", err)
 		return 0, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("Failed to get last insert ID: %v", err)
+		log.Infof("Failed to get last insert ID: %v", err)
 		return 0, err
 	}
 
@@ -140,13 +140,13 @@ func UpdateResourcePool(poolId int64, poolName string) (int64, error) {
 	updateSql := "UPDATE resource_pool SET pool_name=? where id=?"
 	result, err := db.Exec(updateSql, poolName, poolId)
 	if err != nil {
-		log.Printf("Failed to update record: %v", err)
+		log.Infof("Failed to update record: %v", err)
 		return 0, err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("Failed to get rows affected: %v", err)
+		log.Infof("Failed to get rows affected: %v", err)
 		return 0, err
 	}
 
@@ -168,13 +168,13 @@ func InsertNodes(poolId int64, nodes []*NodeInfo) (int64, error) {
 
 	result, err := db.Exec(insertSql, valueArgs...)
 	if err != nil {
-		log.Printf("Batch insert failed: %v", err)
+		log.Infof("Batch insert failed: %v", err)
 		return 0, err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("Get rows affected failed: %v", err)
+		log.Infof("Get rows affected failed: %v", err)
 		return 0, err
 	}
 
