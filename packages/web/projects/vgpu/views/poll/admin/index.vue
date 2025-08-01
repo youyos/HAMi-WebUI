@@ -40,7 +40,8 @@
     </el-row>
     <div style="margin-top: 20px; margin-bottom: 10px;">
       <span>选择节点</span>
-      <span style="float: right;">已选<span style="color: #3061D0; margin: 0 5px;">{{ nodeSelect.length }}</span>个节点</span>
+      <span style="float: right;">已选<span style="color: #3061D0; margin: 0 5px;">{{ nodeSelect.length
+          }}</span>个节点</span>
     </div>
     <div class="wrap">
       <div class="wrap-left">
@@ -120,30 +121,8 @@ const handleCheckboxChange = (ip) => {
 }
 
 onMounted(async () => {
-  console.log(111)
-  // list.value = await pollApi.getPollList({});
-  list.value = [
-    {
-      "poolId": "4",
-      "poolName": "master资源池",
-      "cpuCores": "96",
-      "nodeNum": "1",
-      "gpuNum": "0",
-      "availableMemory": "112892563456",
-      "totalMemory": "134472257536",
-      "diskSize": "7676310884352",
-    },
-    {
-      "poolId": "5",
-      "poolName": "worker资源池",
-      "cpuCores": "80",
-      "nodeNum": "1",
-      "gpuNum": "1",
-      "availableMemory": "134327394304",
-      "totalMemory": "134432251904",
-      "diskSize": "7675682045952",
-    }
-  ]
+  const res = await pollApi.getPollList()
+  list.value = res.data
   nodeList.value = [
     {
       "nodeName": "k8s1",
