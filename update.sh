@@ -50,6 +50,8 @@ usage() {
 
 # 主逻辑
 UPDATED=0
+cd /root/hami
+git pull
 
 case "$1" in
   all)
