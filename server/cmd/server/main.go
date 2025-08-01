@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"os"
 	"vgpu/internal/conf"
+	"vgpu/internal/database"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -32,6 +33,12 @@ func init() {
 func main() {
 	flag.Parse()
 	var ctx = context.Background()
+
+	if err := initDatabase(); err != nil {
+		log.Errorf("数据库初始化失败: %v", err)
+		os.Exit(1)
+	}
+
 	app, cleanup, err := initApp(flagconf, ctx)
 	if err != nil {
 		panic(err)
@@ -61,4 +68,16 @@ func newApp(ctx context.Context, logger log.Logger, gs *grpc.Server, hs *http.Se
 
 func getNodeSelectors(c *conf.Bootstrap) map[string]string {
 	return c.NodeSelectors
+}
+
+func initDatabase() error {
+	config, err := database.LoadConfig(flagconf)
+	log.Infof("config: %+v", config)
+	if err != nil {
+		log.Errorf("Failed to load config: %v", err)
+		return err
+	}
+	database.InitDB(&config.Database)
+	log.Infof("初始化%s成功", config.Database.Driver)
+	return nil
 }
