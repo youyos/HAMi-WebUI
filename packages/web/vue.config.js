@@ -63,5 +63,12 @@ module.exports = defineConfig({
       logging: 'info',
       webSocketURL: `ws://0.0.0.0:${port}/ws`,
     },
+    proxy: {
+      '/api/vgpu': {
+        target: 'http://172.16.100.14:29999',
+        // target: 'http://192.168.2.99:8000',
+        changeOrigin: true,
+      },
+    }
   },
 });

@@ -3,28 +3,30 @@
     <div class="home-left">
       <Block title="显卡资源">
         <template #extra>
-          <div class="all-btn" @click="router.push('/admin/vgpu/card/admin')">
+          <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
         </template>
         <div class="card-overview">
-          <div v-for="item in cardGaugeConfig" :key="item.title">
+          <div v-for="item in cardGaugeConfig.slice(0, 5)" :key="item.title">
+            <Gauge v-bind="item" />
+          </div>
+        </div>
+        <div class="card-overview">
+          <div v-for="item in cardGaugeConfig.slice(-3)" :key="item.title">
             <Gauge v-bind="item" />
           </div>
         </div>
       </Block>
       <Block title="资源总览">
         <template #extra>
-          <div class="all-btn" @click="router.push('/admin/vgpu/card/admin')">
+          <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
         </template>
         <ul class="resourceOverview">
-          <li
-            v-for="{ title, count, icon, to, unit } in resourceOverview"
-            :key="title"
-            @click="router.push(to)"
-          >
+          <li v-for="{ title, count, icon, to, unit } in resourceOverview" :key="title"
+            :style="{ cursor: to ? 'pointer' : 'default' }" @click="sendRouteChange(to)">
             <div class="avatar">
               <svg-icon :icon="icon" />
             </div>
@@ -44,28 +46,21 @@
         <template #extra>
           <time-picker v-model="times" type="datetimerange" size="small" />
         </template>
-        <echarts-plus
-          :options="getRangeOptions(dataSource)"
-          style="height: 250px"
-        />
+        <echarts-plus :options="getRangeOptions(dataSource)" style="height: 250px" />
       </Block>
     </div>
 
     <div class="home-right">
       <Block title="节点总览" style="margin-bottom: 16px">
         <template #extra>
-          <div class="all-btn" @click="router.push('/admin/vgpu/node/admin')">
+          <div class="all-btn" @click="sendRouteChange('/admin/vgpu/node/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
         </template>
         <ul class="node-all">
-          <li
-              v-for="{ title, status, count, color } in nodes"
-              :key="title"
-              @click="
-                router.push(`/admin/vgpu/node/admin?isSchedulable=${status}`)
-              "
-          >
+          <li v-for="{ title, status, count, color } in nodes" :key="title" @click="
+            sendRouteChange(`/admin/vgpu/node/admin?isSchedulable=${status}`)
+            ">
             <div class="title">{{ title }}</div>
             <div class="count" :style="{ color }">
               {{ count }}
@@ -75,7 +70,7 @@
       </Block>
       <Block title="显卡类型分布" style="margin-bottom: 16px">
         <template #extra>
-          <div class="all-btn" @click="router.push('/admin/vgpu/card/admin')">
+          <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
         </template>
@@ -84,15 +79,9 @@
         </div>
       </Block>
 
-      <TabTop
-        v-bind="nodeTotalTop"
-        :onClick="(params) => handleChartClick(params, router)"
-        style="margin-bottom: 16px"
-      />
-      <TabTop
-        v-bind="nodeUsedTop"
-        :onClick="(params) => handleChartClick(params, router)"
-      />
+      <TabTop v-bind="nodeTotalTop" :onClick="(params) => handleChartClick(params, router)"
+        style="margin-bottom: 16px" />
+      <TabTop v-bind="nodeUsedTop" :onClick="(params) => handleChartClick(params, router)" />
     </div>
   </div>
 </template>
@@ -114,6 +103,7 @@ import taskApi from '~/vgpu/api/task';
 import monitorApi from '~/vgpu/api/monitor';
 import cardApi from '~/vgpu/api/card';
 import useInstantVector from '~/vgpu/hooks/useInstantVector';
+import useParentAction from '~/vgpu/hooks/useParentAction';
 import useFetchList from '@/hooks/useFetchList';
 import { getTopOptions } from '~/vgpu/components/config';
 import EchartsPlus from '@/components/Echarts-plus.vue';
@@ -128,10 +118,12 @@ const end = new Date();
 const start = new Date();
 start.setTime(start.getTime() - 3600 * 1000);
 
+const { sendRouteChange } = useParentAction();
+
 const times = ref([start, end]);
 
 const handlePieClick = (params) => {
-  router.push(`/admin/vgpu/card/admin?type=${params.data.name}`);
+  sendRouteChange(`/admin/vgpu/card/admin?type=${params.data.name}`);
 };
 
 
@@ -139,6 +131,36 @@ const alarmData = ref([])
 const chartWidth = ref(200);
 
 const cardGaugeConfig = useInstantVector([
+  {
+    title: 'CPU 使用率',
+    percent: 0,
+    query: `avg(sum (hami_container_vgpu_allocated) by (instance))`,
+    totalQuery: `avg(sum (hami_vgpu_count) by (instance))`,
+    percentQuery: `avg(sum (hami_container_vgpu_allocated) by (instance))/avg(sum (hami_vgpu_count) by (instance)) *100`,
+    total: 0,
+    used: 0,
+    unit: '核',
+  },
+  {
+    title: '内存 使用率',
+    percent: 0,
+    query: `avg(sum (hami_container_vgpu_allocated) by (instance))`,
+    totalQuery: `avg(sum (hami_vgpu_count) by (instance))`,
+    percentQuery: `avg(sum (hami_container_vgpu_allocated) by (instance))/avg(sum (hami_vgpu_count) by (instance)) *100`,
+    total: 0,
+    used: 0,
+    unit: 'GiB',
+  },
+  {
+    title: '磁盘 使用率',
+    percent: 0,
+    query: `avg(sum (hami_container_vgpu_allocated) by (instance))`,
+    totalQuery: `avg(sum (hami_vgpu_count) by (instance))`,
+    percentQuery: `avg(sum (hami_container_vgpu_allocated) by (instance))/avg(sum (hami_vgpu_count) by (instance)) *100`,
+    total: 0,
+    used: 0,
+    unit: '块',
+  },
   {
     title: 'vGPU 分配率',
     percent: 0,
@@ -197,12 +219,39 @@ const resourceOverview = ref([
     count: 0,
     icon: 'vgpu-node',
     unit: '个',
+    to: '/admin/vgpu/node/admin'
+  },
+  {
+    title: '资源池',
+    count: 0,
+    icon: 'vgpu-pool-tab',
+    unit: '个',
+    to: '/admin/vgpu/resource/admin'
+  },
+  {
+    title: 'CPU',
+    count: 0,
+    icon: 'vgpu-chip',
+    unit: '核',
+  },
+  {
+    title: '内存',
+    count: 0,
+    icon: 'vgpu-memory',
+    unit: 'GIB',
+  },
+  {
+    title: '磁盘',
+    count: 0,
+    icon: 'vgpu-disk',
+    unit: '个',
   },
   {
     title: '显卡',
     count: 0,
     icon: 'vgpu-gpu-d',
     unit: '张',
+    to: '/admin/vgpu/card/admin'
   },
   {
     title: 'vGPU',
@@ -328,6 +377,20 @@ const nodeUsedTop = {
   key: 'used',
   config: [
     {
+      tab: 'GPU',
+      key: 'gpu',
+      nameKey: 'node',
+      data: [],
+      query: 'topk(5, avg(hami_core_util_avg) by (node))',
+    },
+    {
+      tab: '内存',
+      key: 'internal',
+      nameKey: 'node',
+      data: [],
+      query: 'topk(5, avg(hami_core_util_avg) by (node))',
+    },
+    {
       tab: '算力',
       key: 'core',
       nameKey: 'node',
@@ -349,6 +412,20 @@ const nodeTotalTop = {
   title: '节点资源分配率 Top5',
   key: 'used',
   config: [
+    {
+      tab: 'GPU',
+      key: 'gpu',
+      nameKey: 'node',
+      data: [],
+      query: `topk(5, avg(hami_container_vgpu_allocated{}) by (node) / avg(hami_vgpu_count{}) by (node) * 100)`,
+    },
+    {
+      tab: '内存',
+      key: 'internal',
+      nameKey: 'node',
+      data: [],
+      query: `topk(5, avg(hami_container_vgpu_allocated{}) by (node) / avg(hami_vgpu_count{}) by (node) * 100)`,
+    },
     {
       tab: 'vGPU',
       key: 'vgpu',
@@ -402,22 +479,23 @@ const fetchRangeData = () => {
 
 
   cardApi
-      .getRangeVector({
-        ...params,
-        query: `sum({__name__=~"alert:.*:count"})`,
-      })
-      .then((res) => {
-        alarmData.value = res.data[0].values;
-      });
+    .getRangeVector({
+      ...params,
+      query: `sum({__name__=~"alert:.*:count"})`,
+    })
+    .then((res) => {
+      alarmData.value = res.data[0].values;
+    });
 
 };
 
 watchEffect(() => {
   resourceOverview.value[0].count = nodeData.value.length;
-  resourceOverview.value[1].count = cardData.value.length;
-  resourceOverview.value[2].count = cardGaugeConfig.value[0].total;
-  resourceOverview.value[3].count = cardGaugeConfig.value[1].total;
-  resourceOverview.value[4].count = cardGaugeConfig.value[2].total.toFixed(0);
+
+  resourceOverview.value[5].count = cardData.value.length;
+  resourceOverview.value[6].count = cardGaugeConfig.value[3].total;
+  resourceOverview.value[7].count = cardGaugeConfig.value[4].total;
+  resourceOverview.value[8].count = cardGaugeConfig.value[5].total.toFixed(0);
 });
 
 onMounted(async () => {
@@ -479,6 +557,7 @@ watch(
   height: 190px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
+
   .gauge-info {
     margin-top: 10px;
   }
