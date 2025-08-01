@@ -123,8 +123,10 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 		var poolData pb.ResourcePoolListData
 		poolData.PoolId = resourcePool.Id
 		poolData.PoolName = resourcePool.PoolName
+
 		dbNodes, _ := database.QueryNodesByPoolId(resourcePool.Id)
 		poolData.NodeNum = int64(len(dbNodes))
+
 		for _, n := range dbNodes {
 			node := k8sNodes[n.NodeName]
 			if node == nil {
@@ -135,7 +137,7 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 			poolData.TotalMemory = poolData.TotalMemory + node.TotalMemory
 			poolData.AvailableMemory = poolData.AvailableMemory + node.AvailableMemory
 			poolData.DiskSize = poolData.DiskSize + node.DiskTotal
-
+			poolData.NodeList = append(poolData.NodeList, n.NodeIp)
 		}
 		data = append(data, &poolData)
 	}

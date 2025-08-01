@@ -137,6 +137,7 @@ message ResourcePoolListData{
   int64 available_memory = 6;//kb
   int64 total_memory = 7; // kb
   int64 disk_size = 8;
+  repeated string node_list = 9;
 }
 
 message ResourcePoolListRequest {

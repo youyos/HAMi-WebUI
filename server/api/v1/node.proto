@@ -79,9 +79,9 @@ message NodeReply {
   int32 vgpu_used = 5;
   int32 vgpu_total = 6;
   int32 core_used = 7;
-  int32 core_total = 8;
+  int64 core_total = 8;
   int32 memory_used = 9;
-  int32 memory_total = 10;
+  int64 memory_total = 10;
   string uid = 11;
   string name = 12;
   int32 card_cnt = 13;
@@ -93,6 +93,8 @@ message NodeReply {
   string kube_proxy_version = 19;
   string architecture = 20;
   string creation_timestamp = 21;
+  int64 disk_size = 22;
+
 }
 
 message NodesReply {

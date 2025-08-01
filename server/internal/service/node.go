@@ -51,8 +51,8 @@ func (s *NodeService) GetAllNodes(ctx context.Context, req *pb.GetAllNodesReq) (
 
 		coreTotal, memoryTotal, err := s.queryNodeMetrics(ctx, node.Name)
 		if err == nil {
-			nodeReply.CoreTotal = coreTotal
-			nodeReply.MemoryTotal = memoryTotal
+			nodeReply.CoreTotal = int64(coreTotal)
+			nodeReply.MemoryTotal = int64(memoryTotal)
 		}
 
 		if filters.Ip != "" && filters.Ip != nodeReply.Ip {
@@ -103,13 +103,16 @@ func (s *NodeService) buildNodeReply(ctx context.Context, node *biz.Node) (*pb.N
 		KubeProxyVersion:        node.KubeProxyVersion,
 		Architecture:            node.Architecture,
 		CreationTimestamp:       node.CreationTimestamp,
+		CoreTotal:               node.CPUCores,
+		MemoryTotal:             node.TotalMemory,
+		DiskSize:                node.DiskTotal,
 	}
 
 	for _, device := range node.Devices {
 		nodeReply.Type = append(nodeReply.Type, device.Type)
 		nodeReply.VgpuTotal += device.Count
-		nodeReply.CoreTotal += device.Devcore
-		nodeReply.MemoryTotal += device.Devmem
+		nodeReply.CoreTotal += int64(device.Devcore)
+		nodeReply.MemoryTotal += int64(device.Devmem)
 		vGPU, core, memory, err := s.pod.StatisticsByDeviceId(ctx, device.AliasId)
 		if err == nil {
 			nodeReply.VgpuUsed += vGPU
