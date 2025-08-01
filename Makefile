@@ -41,11 +41,11 @@ start-prod:
 
 .PHONY: build-image
 build-image:
-	docker build --platform linux/amd64 -t ${DOCKER_IMAGE}:${VERSION} .
+	nerdctl -nk8s.io build --platform linux/amd64 -t ${DOCKER_IMAGE}:${VERSION} .
 
 .PHONY: push-image
 push-image:
-	docker push ${DOCKER_IMAGE}:${VERSION}
+	nerdctl -nk8s.io push ${DOCKER_IMAGE}:${VERSION}
 
 .PHONY: release
 release: build-image push-image

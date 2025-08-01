@@ -1,0 +1,150 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    meta.helm.sh/release-name: hami-webui
+    meta.helm.sh/release-namespace: kube-system
+  labels:
+    app.kubernetes.io/component: hami-webui
+    app.kubernetes.io/instance: hami-webui
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: hami-webui
+    app.kubernetes.io/version: 1.0.5
+    helm.sh/chart: hami-webui-1.0.5
+  name: hami-webui
+  namespace: kube-system
+  resourceVersion: '215714495'
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: hami-webui
+      app.kubernetes.io/instance: hami-webui
+      app.kubernetes.io/name: hami-webui
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/component: hami-webui
+        app.kubernetes.io/instance: hami-webui
+        app.kubernetes.io/name: hami-webui
+    spec:
+      containers:
+        - args:
+            - /apps/dist/main
+          command:
+            - node
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          image: 'projecthami/hami-webui-fe:dev'
+          imagePullPolicy: IfNotPresent
+          name: hami-webui-fe-oss
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 500Mi
+            requests:
+              cpu: 200m
+              memory: 500Mi
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        - args:
+            - '--conf'
+            - /apps/config/config.yaml
+          command:
+            - /apps/server
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          image: 'projecthami/hami-webui-be:dev'
+          imagePullPolicy: IfNotPresent
+          name: hami-webui-be-oss
+          ports:
+            - containerPort: 8000
+              name: metrics
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 50m
+              memory: 250Mi
+            requests:
+              cpu: 50m
+              memory: 250Mi
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /apps/config/
+              name: config
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: hami-webui
+      serviceAccountName: hami-webui
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: hami-webui-config
+          name: config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: hami-webui
+    meta.helm.sh/release-namespace: kube-system
+  labels:
+    app.kubernetes.io/component: hami-webui
+    app.kubernetes.io/instance: hami-webui
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: hami-webui
+    app.kubernetes.io/version: 1.0.5
+    helm.sh/chart: hami-webui-1.0.5
+  name: hami-webui
+  namespace: kube-system
+  resourceVersion: '207243046'
+spec:
+  clusterIP: 10.96.3.221
+  clusterIPs:
+    - 10.96.3.221
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: http
+      nodePort: 29999
+      port: 3000
+      protocol: TCP
+      targetPort: http
+    - name: metrics
+      nodePort: 5063
+      port: 8000
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/component: hami-webui
+    app.kubernetes.io/instance: hami-webui
+    app.kubernetes.io/name: hami-webui
+  sessionAffinity: None
+  type: NodePort
+
+
