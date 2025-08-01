@@ -1,7 +1,7 @@
 <template>
-  <TopBar />
-  <div class="page">
-    <sidebar v-if="!isNoSidebar()" />
+  <TopBar v-if="!hasParentWindow" />
+  <div class="page" :style="{ padding: hasParentWindow ? '20px 30px' : '76px 20px 20px 20px' }">
+    <sidebar v-if="!hasParentWindow && !isNoSidebar()" />
     <app-main />
   </div>
 </template>
@@ -9,6 +9,9 @@
 <script>
 import '@tabler/core/dist/css/tabler.min.css';
 import { AppMain, Sidebar, TopBar } from './components';
+import { useRouter } from 'vue-router'
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
 
 export default {
   name: 'Layout',
@@ -17,13 +20,48 @@ export default {
     Sidebar,
     TopBar,
   },
+  setup() {
+    const router = useRouter();
+    const { hasParentWindow } = useParentAction();
+
+    return { router, hasParentWindow };
+  },
   created() {
     this.isNoSidebar();
+    this.setupMessageListener();
+  },
+  beforeDestroy() {
+    window.removeEventListener('message', this.handleMessage);
+  },
+  mounted() {
+    this.sendLoadedMessage();
   },
   methods: {
     isNoSidebar() {
       const noSidebarPaths = ['/admin/home', '/admin/message-center', "/admin/about-system", "/admin/settings/config-map"];
       return noSidebarPaths.includes(this.$route.fullPath);
+    },
+    setupMessageListener() {
+      window.addEventListener('message', this.handleMessage);
+    },
+    handleMessage(event) {
+      try {
+        const messageData = JSON.parse(event.data);
+        if (messageData.type === "ChangeTheRoute") {
+          this.router.push({
+            path: messageData.data,
+          });
+        }
+      } catch (e) { }
+    },
+    sendLoadedMessage() {
+      if (window.parent !== window) {
+        const message = {
+          type: 'ComponentLoaded',
+          data: window.location.pathname
+        };
+        window.parent.postMessage(JSON.stringify(message), '*');
+      }
     }
   },
 };
@@ -36,8 +74,9 @@ export default {
 .page {
   display: flex;
   flex-direction: row;
-  padding: 20px;
-  padding-top: 76px;
+  // padding: 20px 30px;
+  // padding: 20px;
+  // padding-top: 76px;
   height: calc(100vh);
 }
 

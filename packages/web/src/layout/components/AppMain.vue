@@ -1,5 +1,5 @@
 <template>
-  <div id="content" :style="{ paddingLeft: isHome ? 0 : '20px' }">
+  <div id="content" :style="{ paddingLeft: hasParentWindow || isHome ? 0 : '20px' }">
     <!-- <transition name="fade-transform" mode="out-in"> -->
     <!-- <keep-alive> -->
     <router-view />
@@ -11,6 +11,10 @@
 <script setup>
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+
+const { hasParentWindow } = useParentAction();
 
 const route = useRoute();
 

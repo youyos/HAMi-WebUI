@@ -11,29 +11,29 @@ export const rangeConfigInit = [
           normal: {
             color: {
               type: 'linear',
-              x: 0, // 渐变起始点 0%
-              y: 0, // 渐变起始点 0%
-              x2: 0, // 渐变结束点 100%
-              y2: 1, // 渐变结束点 100%
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
               colorStops: [
                 {
                   offset: 0,
-                  color: 'rgba(250, 200, 88, 0.16)', // 渐变起始颜色
+                  color: 'rgba(250, 200, 88, 0.16)',
                 },
                 {
                   offset: 1,
-                  color: 'rgba(250, 200, 88, 0.00)', // 渐变结束颜色
+                  color: 'rgba(250, 200, 88, 0.00)',
                 },
               ],
-              global: false, // 缺省为 false
+              global: false,
             },
           },
         },
         itemStyle: {
-          color: 'rgb(250, 200, 88)', // 设置线条颜色为橙色
+          color: 'rgb(250, 200, 88)',
         },
         lineStyle: {
-          color: 'rgb(250, 200, 88)', // 设置线条颜色为橙色
+          color: 'rgb(250, 200, 88)',
         },
       },
       {
@@ -45,65 +45,134 @@ export const rangeConfigInit = [
           normal: {
             color: {
               type: 'linear',
-              x: 0, // 渐变起始点 0%
-              y: 0, // 渐变起始点 0%
-              x2: 0, // 渐变结束点 100%
-              y2: 1, // 渐变结束点 100%
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
               colorStops: [
                 {
                   offset: 0,
-                  color: 'rgba(84, 112, 198, 0.16)', // 渐变起始颜色
+                  color: 'rgba(84, 112, 198, 0.16)',
                 },
                 {
                   offset: 1,
-                  color: 'rgba(84, 112, 198, 0.00)', // 渐变结束颜色
+                  color: 'rgba(84, 112, 198, 0.00)',
                 },
               ],
-              global: false, // 缺省为 false
+              global: false,
             },
           },
         },
         itemStyle: {
-          color: 'rgb(84, 112, 198)', // 设置线条颜色为橙色
+          color: 'rgb(84, 112, 198)',
         },
         lineStyle: {
-          color: 'rgb(84, 112, 198)', // 设置线条颜色为橙色
+          color: 'rgb(84, 112, 198)',
         },
       },
       {
         name: '显存',
         query: `sum(hami_container_vmemory_allocated) / sum(hami_memory_size) * 100`,
         data: [],
+        type: 'line',
         areaStyle: {
           normal: {
             color: {
               type: 'linear',
-              x: 0, // 渐变起始点 0%
-              y: 0, // 渐变起始点 0%
-              x2: 0, // 渐变结束点 100%
-              y2: 1, // 渐变结束点 100%
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
               colorStops: [
                 {
                   offset: 0,
-                  color: 'rgba(34, 139, 34, 0.16)', // 渐变起始颜色
+                  color: 'rgba(34, 139, 34, 0.16)',
                 },
                 {
                   offset: 1,
-                  color: 'rgba(34, 139, 34, 0.00)', // 渐变结束颜色
+                  color: 'rgba(34, 139, 34, 0.00)',
                 },
               ],
-              global: false, // 缺省为 false
+              global: false,
             },
           },
         },
         itemStyle: {
-          color: 'rgb(145, 204, 117)', // 设置线条颜色为橙色
+          color: 'rgb(145, 204, 117)',
         },
         lineStyle: {
-          color: 'rgb(145, 204, 117)', // 设置线条颜色为橙色
+          color: 'rgb(145, 204, 117)',
         },
       },
-    ],
+      {
+        name: 'CPU',
+        query: `sum(hami_container_cpu_allocated) / sum(hami_cpu_count) * 100`,
+        data: [],
+        type: 'line',
+        areaStyle: {
+          normal: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(255, 99, 71, 0.16)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(255, 99, 71, 0.00)',
+                },
+              ],
+              global: false,
+            },
+          },
+        },
+        itemStyle: {
+          color: 'rgb(255, 99, 71)',
+        },
+        lineStyle: {
+          color: 'rgb(255, 99, 71)',
+        },
+      },
+      {
+        name: '内存',
+        query: `sum(hami_container_memory_allocated) / sum(hami_memory_capacity) * 100`,
+        data: [],
+        type: 'line',
+        areaStyle: {
+          normal: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(138, 43, 226, 0.16)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(138, 43, 226, 0.00)',
+                },
+              ],
+              global: false,
+            },
+          },
+        },
+        itemStyle: {
+          color: 'rgb(138, 43, 226)',
+        },
+        lineStyle: {
+          color: 'rgb(138, 43, 226)',
+        },
+      }
+    ]
   },
   {
     title: '资源使用趋势',
@@ -174,6 +243,74 @@ export const rangeConfigInit = [
           color: 'rgb(145, 204, 117)', // 设置线条颜色为橙色
         },
       },
+      {
+        name: 'CPU',
+        query: `sum(hami_container_cpu_allocated) / sum(hami_cpu_count) * 100`,
+        data: [],
+        type: 'line',
+        areaStyle: {
+          normal: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(255, 99, 71, 0.16)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(255, 99, 71, 0.00)',
+                },
+              ],
+              global: false,
+            },
+          },
+        },
+        itemStyle: {
+          color: 'rgb(255, 99, 71)',
+        },
+        lineStyle: {
+          color: 'rgb(255, 99, 71)',
+        },
+      },
+      {
+        name: '内存',
+        query: `sum(hami_container_memory_allocated) / sum(hami_memory_capacity) * 100`,
+        data: [],
+        type: 'line',
+        areaStyle: {
+          normal: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(138, 43, 226, 0.16)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(138, 43, 226, 0.00)',
+                },
+              ],
+              global: false,
+            },
+          },
+        },
+        itemStyle: {
+          color: 'rgb(138, 43, 226)',
+        },
+        lineStyle: {
+          color: 'rgb(138, 43, 226)',
+        },
+      }
     ],
   },
 ];
