@@ -56,15 +56,15 @@ build-local:
 # 5. Docker image commands
 .PHONY: build-image
 build-image:
-	docker build --platform linux/amd64 -t ${DOCKER_IMAGE}:${VERSION} .
+	nerdctl -nk8s.io build --platform linux/amd64 -t ${DOCKER_IMAGE}:${VERSION} .
 
 .PHONY: push-image
 push-image:
-	docker push ${DOCKER_IMAGE}:${VERSION}
+	nerdctl -nk8s.io push ${DOCKER_IMAGE}:${VERSION}
 
 .PHONY: save-image
 save-image:
-	docker save -o $(BUILD_PATH)hami_webui_release_${VERSION}.tar ${DOCKER_IMAGE}:${VERSION}
+	nerdctl -nk8s.io save -o $(BUILD_PATH)hami_webui_release_${VERSION}.tar ${DOCKER_IMAGE}:${VERSION}
 	gzip -f $(BUILD_PATH)hami_webui_release_${VERSION}.tar
 
 # 6. Debugging and Testing
