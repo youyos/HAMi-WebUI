@@ -36,6 +36,16 @@ service Node {
       summary: "节点详情";
     };
   }
+
+  rpc UpdateNodeStatus (UpdateNodeStatusRequest) returns (UpdateNodeStatusResponse) {
+    option (google.api.http) = {
+      post: "/v1/node/status/update",
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "禁用启用节点";
+    };
+  }
 }
 
 message GetSummaryReq {
@@ -99,4 +109,14 @@ message NodeReply {
 
 message NodesReply {
   repeated NodeReply list = 1;
+}
+
+message UpdateNodeStatusRequest {
+  string node_name = 1;
+  string status = 2;
+}
+
+message UpdateNodeStatusResponse {
+  int32 code =  1;
+  string message =  2;
 }

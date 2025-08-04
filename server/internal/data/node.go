@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/api/policy/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
@@ -238,4 +240,98 @@ func (r *nodeRepo) FindDeviceByAliasId(aliasId string) (*biz.DeviceInfo, error) 
 		}
 	}
 	return nil, errors.New(fmt.Sprintf("aliasID:%s device not found", aliasId))
+}
+
+// DisableNode 禁用节点（标记为不可调度并排空Pod）
+func (r *nodeRepo) EnableNode(ctx context.Context, nodeName string) error {
+	// 1. 标记为可调度
+	patch := []byte(`{"spec":{"unschedulable":false}}`)
+	_, err := r.data.k8sCl.CoreV1().Nodes().Patch(
+		ctx,
+		nodeName,
+		k8stypes.StrategicMergePatchType,
+		patch,
+		metav1.PatchOptions{},
+	)
+	if err != nil {
+		return fmt.Errorf("标记节点不可调度失败: %v", err)
+	}
+
+	log.Infof("节点 %s 已恢复可调度状态", nodeName)
+
+	//// 2. 驱逐 Pod
+	//if err := r.evictPodsOnNode(ctx, nodeName); err != nil {
+	//	return fmt.Errorf("驱逐 Pod 失败: %v", err)
+	//}
+	return nil
+}
+
+// DisableNode 禁用节点（标记为不可调度并排空Pod）
+func (r *nodeRepo) DisableNode(ctx context.Context, nodeName string) error {
+	// 1. 标记为不可调度
+	patch := []byte(`{"spec":{"unschedulable":true}}`)
+	_, err := r.data.k8sCl.CoreV1().Nodes().Patch(
+		ctx,
+		nodeName,
+		k8stypes.StrategicMergePatchType,
+		patch,
+		metav1.PatchOptions{},
+	)
+	if err != nil {
+		return fmt.Errorf("标记节点不可调度失败: %v", err)
+	}
+	log.Infof("节点 %s 已设置为不可调度状态", nodeName)
+
+	//// 2. 驱逐 Pod
+	//if err := r.evictPodsOnNode(ctx, nodeName); err != nil {
+	//	return fmt.Errorf("驱逐 Pod 失败: %v", err)
+	//}
+	return nil
+}
+
+func (r *nodeRepo) evictPodsOnNode(ctx context.Context, nodeName string) error {
+	// 获取该节点上的 Pod 列表
+	pods, err := r.data.k8sCl.CoreV1().Pods("").List(ctx, metav1.ListOptions{
+		FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName),
+	})
+	if err != nil {
+		return fmt.Errorf("列出节点上的 Pod 失败: %v", err)
+	}
+
+	// 遍历驱逐 Pod
+	for _, pod := range pods.Items {
+		// 跳过 DaemonSet 和 Mirror Pods（它们不能被驱逐）
+		if isMirrorPod(&pod) || isDaemonSetPod(&pod) {
+			continue
+		}
+
+		eviction := &v1beta1.Eviction{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      pod.Name,
+				Namespace: pod.Namespace,
+			},
+		}
+
+		err := r.data.k8sCl.CoreV1().Pods(pod.Namespace).Evict(ctx, eviction)
+		if err != nil {
+			r.log.Warnf("驱逐 Pod %s/%s 失败: %v", pod.Namespace, pod.Name, err)
+		} else {
+			r.log.Infof("已驱逐 Pod %s/%s", pod.Namespace, pod.Name)
+		}
+	}
+	return nil
+}
+
+func isDaemonSetPod(pod *corev1.Pod) bool {
+	for _, owner := range pod.OwnerReferences {
+		if owner.Kind == "DaemonSet" {
+			return true
+		}
+	}
+	return false
+}
+
+func isMirrorPod(pod *corev1.Pod) bool {
+	_, found := pod.Annotations["kubernetes.io/config.mirror"]
+	return found
 }
