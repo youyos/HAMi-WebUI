@@ -5,35 +5,35 @@
         round>创建资源池</el-button>
     </template>
   </list-header>
-
-  <block-box
-    v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in list"
-    :key="poolId">
-    <el-row style="align-items: center;">
-      <div class="left">
-        <b class="title">{{ poolName }}</b>
-        <div class="tags">
-          <span>节点数量&nbsp;&nbsp;{{ nodeNum }}</span>
-          <span>CPU数&nbsp;&nbsp;{{ cpuCores }}核</span>
-          <span>显卡数量&nbsp;&nbsp;{{ gpuNum }}张</span>
-          <span>可用/总内存&nbsp;&nbsp;{{ bytesToGB(availableMemory) }}GB / {{ bytesToGB(totalMemory) }}GB</span>
-          <span>磁盘大小&nbsp;&nbsp;{{ bytesToGB(diskSize) }}GB</span>
+  <div v-loading="loading" style="min-height: 200px;">
+    <block-box
+      v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in list"
+      :key="poolId">
+      <el-row style="align-items: center;">
+        <div class="left">
+          <b class="title">{{ poolName }}</b>
+          <div class="tags">
+            <span>节点数量&nbsp;&nbsp;{{ nodeNum }}</span>
+            <span>CPU数&nbsp;&nbsp;{{ cpuCores }}核</span>
+            <span>显卡数量&nbsp;&nbsp;{{ gpuNum }}张</span>
+            <span>可用/总内存&nbsp;&nbsp;{{ bytesToGB(availableMemory) }}GB / {{ bytesToGB(totalMemory) }}GB</span>
+            <span>磁盘大小&nbsp;&nbsp;{{ bytesToGB(diskSize) }}GB</span>
+          </div>
         </div>
-      </div>
-      <div class="right">
-        <el-button type="text">查看详情</el-button>
-        <template v-if="index === 0">
-          <el-button type="text">配置</el-button>
-        </template>
-        <template v-else>
-          <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList; input = poolName"
-            type="text">编辑</el-button>
-          <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
-        </template>
-      </div>
-    </el-row>
-  </block-box>
-
+        <div class="right">
+          <el-button type="text">查看详情</el-button>
+          <template v-if="index === 0">
+            <el-button type="text">配置</el-button>
+          </template>
+          <template v-else>
+            <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList; input = poolName"
+              type="text">编辑</el-button>
+            <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
+          </template>
+        </div>
+      </el-row>
+    </block-box>
+  </div>
   <el-dialog @close="editId = null; input = ''; nodeSelect = []" v-model="dialogVisible"
     :title="editId ? '编辑资源池' : '创建资源池'" width="1180" :before-close="handleClose">
     <el-row :wrap="false" style="align-items: center;">
@@ -110,6 +110,7 @@ const nodeList = ref([])
 const nodeSelect = ref([])
 const input = ref('')
 const btnLoading = ref(false)
+const loading = ref(true)
 
 const bytesToGB = (bytes) => {
   return Math.round(bytes / (1024 * 1024 * 1024));
@@ -145,10 +146,12 @@ const handleOk = async () => {
       nodes
     })
   }
-  console.log(res, 'res')
-  getList();
+  if (res?.code === 200) {
+    getList();
+    dialogVisible.value = false;
+  }
+
   btnLoading.value = false;
-  dialogVisible.value = false;
 }
 
 const handleCheckboxChange = (ip) => {
@@ -165,17 +168,27 @@ const handleDelete = async (id) => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
-  }).then(async () => {
-    const res = await pollApi.delete({ pool_id: id })
-    if (res.code === 1) {
-      ElMessage.success('删除成功');
-      getList();
+    beforeClose: async (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true;
+        const res = await pollApi.delete({ pool_id: id });
+        if (res.code === 200) {
+          ElMessage.success('删除成功');
+          getList();
+          done(); // 关闭对话框
+        }
+        instance.confirmButtonLoading = false; // 确保无论如何都关闭loading
+      } else {
+        done();
+      }
     }
   })
 }
 
 const getList = async () => {
+  loading.value = true
   const res = await pollApi.getPollList()
+  loading.value = false
   list.value = res.data
 }
 
