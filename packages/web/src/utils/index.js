@@ -566,3 +566,8 @@ export const clearEdges = (items) =>
     ...item,
     children: clearEdges(item.edges.children),
   }));
+
+// 字节转GB
+export const bytesToGB = (bytes) => {
+  return Math.round(bytes / (1024 * 1024 * 1024));
+}

@@ -111,6 +111,7 @@ onMounted(async () => {
         query: v.query,
       })
       .then((res) => {
+        console.log(v.query, res, 'res')
         currentConfig.value[i].data = res.data.map((item) => ({
           name: item.metric[v.nameKey],
           value: item.value,

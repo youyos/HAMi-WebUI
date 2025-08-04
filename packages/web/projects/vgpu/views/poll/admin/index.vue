@@ -104,6 +104,7 @@ import { ref, onMounted, computed, watchEffect } from 'vue';
 import BlockBox from '@/components/BlockBox.vue';
 import { Remove } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { bytesToGB } from '@/utils';
 
 // 数据列表相关
 const list = ref([])
@@ -134,11 +135,6 @@ const paginatedList = computed(() => {
 // watchEffect(()=>{
 //   console.log(currentPage.value, pageSize.value, 88)
 // })
-
-// 字节转GB
-const bytesToGB = (bytes) => {
-  return Math.round(bytes / (1024 * 1024 * 1024));
-}
 
 // 分页大小变化
 const handleSizeChange = (val) => {
