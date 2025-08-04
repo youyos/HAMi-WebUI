@@ -1,13 +1,13 @@
 <template>
   <list-header description="资源池管理用于统一管理和调度计算资源，支持资源的动态分配、回收与负载均衡，提升资源利用率和系统灵活性。">
     <template #actions>
-      <el-button @click="editData = null; dialogVisible = true" style="margin-right: 24px;" type="primary"
+      <el-button @click="editId = null; dialogVisible = true" style="margin-right: 24px;" type="primary"
         round>创建资源池</el-button>
     </template>
   </list-header>
 
   <block-box
-    v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize }, index in list"
+    v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in list"
     :key="poolId">
     <el-row style="align-items: center;">
       <div class="left">
@@ -26,14 +26,16 @@
           <el-button type="text">配置</el-button>
         </template>
         <template v-else>
-          <el-button type="text">编辑</el-button>
-          <el-button type="text">删除</el-button>
+          <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList; input = poolName"
+            type="text">编辑</el-button>
+          <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
         </template>
       </div>
     </el-row>
   </block-box>
 
-  <el-dialog v-model="dialogVisible" :title="editData ? '编辑资源池' : '创建资源池'" width="1180" :before-close="handleClose">
+  <el-dialog @close="editId = null; input = ''; nodeSelect = []" v-model="dialogVisible"
+    :title="editId ? '编辑资源池' : '创建资源池'" width="1180" :before-close="handleClose">
     <el-row :wrap="false" style="align-items: center;">
       <span style="flex-shrink: 0; margin-right: 14px;">资源池名称</span>
       <el-input style="flex: 1;" v-model="input" size="large" />
@@ -87,7 +89,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确认</el-button>
+        <el-button :loading="btnLoading" type="primary" @click="handleOk">确认</el-button>
       </span>
     </template>
   </el-dialog>
@@ -99,16 +101,54 @@ import pollApi from '~/vgpu/api/poll';
 import { ref, onMounted } from 'vue';
 import BlockBox from '@/components/BlockBox.vue';
 import { Remove } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const list = ref([])
 const dialogVisible = ref(false)
-const editData = ref(null)
+const editId = ref(null)
 const nodeList = ref([])
 const nodeSelect = ref([])
 const input = ref('')
+const btnLoading = ref(false)
 
 const bytesToGB = (bytes) => {
   return Math.round(bytes / (1024 * 1024 * 1024));
+}
+
+const handleOk = async () => {
+  if (!input.value) {
+    ElMessage({
+      message: '请输入资源池名称',
+      type: 'warning',
+    })
+    return;
+  }
+  if (!nodeSelect.value.length) {
+    ElMessage({
+      message: '请选择节点',
+      type: 'warning',
+    })
+    return;
+  }
+  btnLoading.value = true;
+  const nodes = nodeList.value.filter(e => nodeSelect.value.includes(e.nodeIp)).map(e => ({ nodeIp: e.nodeIp, nodeName: e.nodeName }))
+  let res;
+  if (editId.value) {
+    res = await pollApi.update({
+      pool_id: editId.value,
+      pool_name: input.value,
+      nodes
+    })
+  } else {
+    res = await pollApi.create({
+      pool_name: input.value,
+      nodes
+    })
+  }
+  console.log(res, 'res')
+  getList();
+  btnLoading.value = false;
+  dialogVisible.value = false;
 }
 
 const handleCheckboxChange = (ip) => {
@@ -120,29 +160,31 @@ const handleCheckboxChange = (ip) => {
   }
 }
 
-onMounted(async () => {
+const handleDelete = async (id) => {
+  ElMessageBox.confirm(`确定要删除当前资源池吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(async () => {
+    const res = await pollApi.delete({ pool_id: id })
+    if (res.code === 1) {
+      ElMessage.success('删除成功');
+      getList();
+    }
+  })
+}
+
+const getList = async () => {
   const res = await pollApi.getPollList()
   list.value = res.data
-  nodeList.value = [
-    {
-      "nodeName": "k8s1",
-      "cpuCores": "96",
-      "gpuNum": "0",
-      "gpuMemory": "0",
-      "totalMemory": "134472257536",
-      "diskSize": "7676310884352",
-      "nodeIp": "172.16.100.14"
-    },
-    {
-      "nodeName": "k8s2",
-      "cpuCores": "80",
-      "gpuNum": "1",
-      "gpuMemory": "25769803776",
-      "totalMemory": "134432251904",
-      "diskSize": "7675682045952",
-      "nodeIp": "172.16.100.15"
-    }
-  ]
+}
+
+
+onMounted(async () => {
+  getList();
+  const res = await pollApi.getNodeList()
+  nodeList.value = res.data
+
 });
 
 </script>

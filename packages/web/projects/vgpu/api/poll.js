@@ -12,6 +12,38 @@ class pollApi {
     });
   }
 
+  getNodeList(params) {
+    return request({
+      url: apiPrefix + '/v1/available/nodes',
+      method: 'GET',
+      params,
+    });
+  }
+
+  create(data) {
+    return request({
+      url: apiPrefix + '/v1/resource/pool/create',
+      method: 'POST',
+      data,
+    });
+  }
+
+  update(data) {
+    return request({
+      url: apiPrefix + '/v1/resource/pool/update',
+      method: 'POST',
+      data,
+    });
+  }
+
+  delete(data) {
+    return request({
+      url: apiPrefix + '/v1/resource/pool/delete',
+      method: 'POST',
+      data,
+    });
+  }
+
   // getNodes(data) {
   //   return request({
   //     url: apiPrefix +  '/v1/nodes',
