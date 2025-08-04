@@ -88,6 +88,23 @@ func (s *NodeService) GetNode(ctx context.Context, req *pb.GetNodeReq) (*pb.Node
 	return s.buildNodeReply(ctx, node)
 }
 
+func (s *NodeService) UpdateNodeStatus(ctx context.Context, req *pb.UpdateNodeStatusRequest) (*pb.UpdateNodeStatusResponse, error) {
+	nodeName := req.NodeName
+	if req.Status == "DISABLED" {
+		err := s.uc.DisableNode(ctx, nodeName)
+		if err != nil {
+			return &pb.UpdateNodeStatusResponse{Code: 500, Message: "禁用失败"}, err
+		}
+	} else {
+		err := s.uc.EnableNode(ctx, nodeName)
+		if err != nil {
+			return &pb.UpdateNodeStatusResponse{Code: 500, Message: "启用失败"}, nil
+		}
+	}
+
+	return &pb.UpdateNodeStatusResponse{Code: 200, Message: "成功"}, nil
+}
+
 func (s *NodeService) buildNodeReply(ctx context.Context, node *biz.Node) (*pb.NodeReply, error) {
 	nodeReply := &pb.NodeReply{
 		Name:                    node.Name,

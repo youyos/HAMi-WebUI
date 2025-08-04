@@ -33,12 +33,12 @@ func (s *ResourcePoolService) Create(ctx context.Context, req *pb.ResourcePoolCr
 	poolName := req.PoolName
 
 	if database.ExistsResourcePoolByPoolName(poolName) {
-		return &pb.BaseResponse{Code: -1, Message: "资源池：'" + poolName + "'已经存在"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "资源池：'" + poolName + "'已经存在"}, nil
 	}
 
 	poolId, err := database.InsertResourcePool(poolName)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: poolName + "创建资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: poolName + "创建资源池失败"}, nil
 	}
 
 	nodes := make([]*database.NodeInfo, 0, len(req.Nodes))
@@ -51,11 +51,11 @@ func (s *ResourcePoolService) Create(ctx context.Context, req *pb.ResourcePoolCr
 
 	rows, err := database.InsertNodes(poolId, nodes)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: poolName + "创建资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: poolName + "创建资源池失败"}, nil
 	}
 
 	log.Info("CreateResourcePool success", poolName, rows)
-	return &pb.BaseResponse{Code: 1, Message: "成功"}, nil
+	return &pb.BaseResponse{Code: 200, Message: "成功"}, nil
 }
 
 func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUpdateRequest) (*pb.BaseResponse, error) {
@@ -63,16 +63,16 @@ func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUp
 	poolId := req.PoolId
 	resourcePool, err := database.QueryResourcePoolById(poolId)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: "更新资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "更新资源池失败"}, nil
 	}
 
 	if resourcePool == nil {
-		return &pb.BaseResponse{Code: -1, Message: "资源池不存在"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "资源池不存在"}, nil
 	}
 
 	_, err = database.DeleteNodesByPoolId(poolId)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: "更新资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "更新资源池失败"}, nil
 	}
 
 	nodes := make([]*database.NodeInfo, 0, len(req.Nodes))
@@ -85,10 +85,10 @@ func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUp
 	_, err = database.InsertNodes(poolId, nodes)
 	_, err = database.UpdateResourcePool(poolId, req.PoolName)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: "更新资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "更新资源池失败"}, nil
 	}
 
-	return &pb.BaseResponse{Code: 1, Message: "成功"}, nil
+	return &pb.BaseResponse{Code: 200, Message: "成功"}, nil
 }
 
 func (s *ResourcePoolService) Delete(ctx context.Context, req *pb.ResourcePoolDeleteRequest) (*pb.BaseResponse, error) {
@@ -96,17 +96,17 @@ func (s *ResourcePoolService) Delete(ctx context.Context, req *pb.ResourcePoolDe
 	poolId := req.PoolId
 	num, err := database.DeleteNodesByPoolId(poolId)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: "删除资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "删除资源池失败"}, nil
 	}
 
 	log.Infof("DeleteNodes success, poolId: %d, 影响行数: %d", poolId, num)
 	num, err = database.DeleteResourcePoolById(poolId)
 	if err != nil {
-		return &pb.BaseResponse{Code: -1, Message: "删除资源池失败"}, nil
+		return &pb.BaseResponse{Code: 500, Message: "删除资源池失败"}, nil
 	}
 
 	log.Infof("DeleteResourcePool success poolId: %d, 影响行数: %d", poolId, num)
-	return &pb.BaseResponse{Code: 1, Message: "成功"}, nil
+	return &pb.BaseResponse{Code: 200, Message: "成功"}, nil
 }
 
 func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolListRequest) (*pb.ResourcePoolListResponse, error) {

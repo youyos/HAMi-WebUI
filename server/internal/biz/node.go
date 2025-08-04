@@ -58,6 +58,8 @@ type NodeRepo interface {
 	GetNode(context.Context, string) (*Node, error)
 	ListAllDevices(context.Context) ([]*DeviceInfo, error)
 	FindDeviceByAliasId(string) (*DeviceInfo, error)
+	EnableNode(context.Context, string) error
+	DisableNode(context.Context, string) error
 }
 
 type NodeUsecase struct {
@@ -87,4 +89,12 @@ func (uc *NodeUsecase) ListAllDevices(ctx context.Context) ([]*DeviceInfo, error
 
 func (uc *NodeUsecase) FindDeviceByAliasId(aliasId string) (*DeviceInfo, error) {
 	return uc.repo.FindDeviceByAliasId(aliasId)
+}
+
+func (uc *NodeUsecase) EnableNode(ctx context.Context, nodeName string) error {
+	return uc.repo.EnableNode(ctx, nodeName)
+}
+
+func (uc *NodeUsecase) DisableNode(ctx context.Context, nodeName string) error {
+	return uc.repo.DisableNode(ctx, nodeName)
 }
