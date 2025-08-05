@@ -207,6 +207,9 @@ func (s *ResourcePoolService) getK8sNodes(ctx context.Context) map[string]*biz.N
 	nodes, _ := s.uc.ListAllNodesV2(ctx)
 	m := make(map[string]*biz.Node)
 	for _, node := range nodes {
+		if node.Lables["gpu"] != "on" {
+			continue
+		}
 		node.GPUCount = int64(len(node.Devices))
 		m[node.Name] = node
 	}
