@@ -124,6 +124,7 @@ message NodeReply {
   string architecture = 20;
   string creation_timestamp = 21;
   int64 disk_size = 22;
+  repeated string resource_pools = 23;
 
 }
 

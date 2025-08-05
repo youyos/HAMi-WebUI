@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"vgpu/internal/biz"
+	"vgpu/internal/database"
 
 	"github.com/jinzhu/copier"
 
@@ -49,11 +50,17 @@ func (s *NodeService) GetAllNodes(ctx context.Context, req *pb.GetAllNodesReq) (
 			return nil, err
 		}
 
-		coreTotal, memoryTotal, err := s.queryNodeMetrics(ctx, node.Name)
-		if err == nil {
-			nodeReply.CoreTotal = int64(coreTotal)
-			nodeReply.MemoryTotal = int64(memoryTotal)
+		resourcePoolNames, err := database.QueryResourceNamesByIp(node.IP)
+		if err != nil {
+			return nil, err
 		}
+
+		nodeReply.ResourcePools = resourcePoolNames
+		//coreTotal, memoryTotal, err := s.queryNodeMetrics(ctx, node.Name)
+		//if err == nil {
+		//	nodeReply.CoreTotal = int64(coreTotal)
+		//	nodeReply.MemoryTotal = int64(memoryTotal)
+		//}
 
 		if filters.Ip != "" && filters.Ip != nodeReply.Ip {
 			continue

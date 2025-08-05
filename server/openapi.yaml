@@ -300,6 +300,10 @@ components:
                     type: string
                 diskSize:
                     type: string
+                resourcePools:
+                    type: array
+                    items:
+                        type: string
         NodesReply:
             type: object
             properties:
