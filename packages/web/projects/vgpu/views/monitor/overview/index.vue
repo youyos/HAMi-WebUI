@@ -95,10 +95,11 @@ import {
 } from './getOptions';
 import Block from './Block.vue';
 import './style.scss';
-import { timeParse, getDaysInRange, getRandom } from '@/utils';
+import { timeParse, getDaysInRange, getRandom, bytesToGB } from '@/utils';
 import { useRouter } from 'vue-router';
 import UserCard from '@/components/UserCard.vue';
 import nodeApi from '~/vgpu/api/node';
+import pollApi from '~/vgpu/api/poll';
 import taskApi from '~/vgpu/api/task';
 import monitorApi from '~/vgpu/api/monitor';
 import cardApi from '~/vgpu/api/card';
@@ -134,9 +135,9 @@ const cardGaugeConfig = useInstantVector([
   {
     title: 'CPU 使用率',
     percent: 0,
-    query: `avg(sum (hami_container_vgpu_allocated) by (instance))`,
-    totalQuery: `avg(sum (hami_vgpu_count) by (instance))`,
-    percentQuery: `avg(sum (hami_container_vgpu_allocated) by (instance))/avg(sum (hami_vgpu_count) by (instance)) *100`,
+    query: `avg(count(node_cpu_seconds_total{mode="idle"}) by (instance)) * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])))`,
+    totalQuery: `avg(count(node_cpu_seconds_total{mode="idle"}) by (instance))`,
+    percentQuery: ``,
     total: 0,
     used: 0,
     unit: '核',
@@ -144,9 +145,9 @@ const cardGaugeConfig = useInstantVector([
   {
     title: '内存 使用率',
     percent: 0,
-    query: `avg(sum (hami_container_vgpu_allocated) by (instance))`,
-    totalQuery: `avg(sum (hami_vgpu_count) by (instance))`,
-    percentQuery: `avg(sum (hami_container_vgpu_allocated) by (instance))/avg(sum (hami_vgpu_count) by (instance)) *100`,
+    query: `avg(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024`,
+    totalQuery: `avg(node_memory_MemTotal_bytes) / 1024 / 1024 / 1024`,
+    percentQuery: ``,
     total: 0,
     used: 0,
     unit: 'GiB',
@@ -154,12 +155,12 @@ const cardGaugeConfig = useInstantVector([
   {
     title: '磁盘 使用率',
     percent: 0,
-    query: `avg(sum (hami_container_vgpu_allocated) by (instance))`,
-    totalQuery: `avg(sum (hami_vgpu_count) by (instance))`,
-    percentQuery: `avg(sum (hami_container_vgpu_allocated) by (instance))/avg(sum (hami_vgpu_count) by (instance)) *100`,
+    query: `avg(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"} - node_filesystem_free_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
+    totalQuery: `avg(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
+    percentQuery: ``,
     total: 0,
     used: 0,
-    unit: '块',
+    unit: 'GiB',
   },
   {
     title: 'vGPU 分配率',
@@ -244,7 +245,7 @@ const resourceOverview = ref([
     title: '磁盘',
     count: 0,
     icon: 'vgpu-disk',
-    unit: '个',
+    unit: 'GIB',
   },
   {
     title: '显卡',
@@ -312,6 +313,8 @@ const nodeData = useFetchList(nodeApi.getNodeListReq({ filters: {} }));
 
 const cardData = useFetchList(cardApi.getCardListReq({ filters: {} }));
 
+const pollData = useFetchList(pollApi.getPollList(), 'data');
+
 const cardDetail = useInstantVector([
   {
     title: 'vGPU',
@@ -377,18 +380,18 @@ const nodeUsedTop = {
   key: 'used',
   config: [
     {
-      tab: 'GPU',
-      key: 'gpu',
-      nameKey: 'node',
+      tab: 'CPU',
+      key: 'cpu',
+      nameKey: 'instance',
       data: [],
-      query: 'topk(5, avg(hami_core_util_avg) by (node))',
+      query: 'topk(5, avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))',
     },
     {
       tab: '内存',
       key: 'internal',
-      nameKey: 'node',
+      nameKey: 'instance',
       data: [],
-      query: 'topk(5, avg(hami_core_util_avg) by (node))',
+      query: 'topk(5, ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))',
     },
     {
       tab: '算力',
@@ -491,7 +494,10 @@ const fetchRangeData = () => {
 
 watchEffect(() => {
   resourceOverview.value[0].count = nodeData.value.length;
-
+  resourceOverview.value[1].count = pollData.value.length;
+  resourceOverview.value[2].count = cardGaugeConfig.value[0].total;
+  resourceOverview.value[3].count = Math.round(cardGaugeConfig.value[1].total);
+  resourceOverview.value[4].count = Math.round(cardGaugeConfig.value[2].total);
   resourceOverview.value[5].count = cardData.value.length;
   resourceOverview.value[6].count = cardGaugeConfig.value[3].total;
   resourceOverview.value[7].count = cardGaugeConfig.value[4].total;

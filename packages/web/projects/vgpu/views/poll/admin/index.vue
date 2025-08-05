@@ -5,34 +5,40 @@
         round>创建资源池</el-button>
     </template>
   </list-header>
-
-  <block-box
-    v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in list"
-    :key="poolId">
-    <el-row style="align-items: center;">
-      <div class="left">
-        <b class="title">{{ poolName }}</b>
-        <div class="tags">
-          <span>节点数量&nbsp;&nbsp;{{ nodeNum }}</span>
-          <span>CPU数&nbsp;&nbsp;{{ cpuCores }}核</span>
-          <span>显卡数量&nbsp;&nbsp;{{ gpuNum }}张</span>
-          <span>可用/总内存&nbsp;&nbsp;{{ bytesToGB(availableMemory) }}GB / {{ bytesToGB(totalMemory) }}GB</span>
-          <span>磁盘大小&nbsp;&nbsp;{{ bytesToGB(diskSize) }}GB</span>
+  <div v-loading="loading" style="min-height: 90px;">
+    <block-box
+      v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in paginatedList"
+      :key="poolId">
+      <el-row style="align-items: center;">
+        <div class="left">
+          <b class="title">{{ poolName }}</b>
+          <div class="tags">
+            <span>节点数量&nbsp;&nbsp;{{ nodeNum }}</span>
+            <span>CPU数&nbsp;&nbsp;{{ cpuCores }}核</span>
+            <span>显卡数量&nbsp;&nbsp;{{ gpuNum }}张</span>
+            <span>可用/总内存&nbsp;&nbsp;{{ bytesToGB(availableMemory) }}GB / {{ bytesToGB(totalMemory) }}GB</span>
+            <span>磁盘大小&nbsp;&nbsp;{{ bytesToGB(diskSize) }}GB</span>
+          </div>
         </div>
-      </div>
-      <div class="right">
-        <el-button type="text">查看详情</el-button>
-        <template v-if="index === 0">
-          <el-button type="text">配置</el-button>
-        </template>
-        <template v-else>
-          <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList; input = poolName"
-            type="text">编辑</el-button>
-          <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
-        </template>
-      </div>
-    </el-row>
-  </block-box>
+        <div class="right">
+          <el-button type="text">查看详情</el-button>
+          <template v-if="index === 0 && currentPage === 1">
+            <el-button type="text">配置</el-button>
+          </template>
+          <template v-else>
+            <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList; input = poolName"
+              type="text">编辑</el-button>
+            <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
+          </template>
+        </div>
+      </el-row>
+    </block-box>
+  </div>
+
+  <!-- 分页组件 -->
+  <el-pagination background v-model:current-page="currentPage" v-model:page-size="pageSize"
+    layout="total, ->, sizes, jumper, prev, next" :page-sizes="[10, 20, 50, 100]" :total="list.length"
+    @size-change="handleSizeChange" @current-change="handleCurrentChange" />
 
   <el-dialog @close="editId = null; input = ''; nodeSelect = []" v-model="dialogVisible"
     :title="editId ? '编辑资源池' : '创建资源池'" width="1180" :before-close="handleClose">
@@ -43,7 +49,7 @@
     <div style="margin-top: 20px; margin-bottom: 10px;">
       <span>选择节点</span>
       <span style="float: right;">已选<span style="color: #3061D0; margin: 0 5px;">{{ nodeSelect.length
-          }}</span>个节点</span>
+      }}</span>个节点</span>
     </div>
     <div class="wrap">
       <div class="wrap-left">
@@ -61,11 +67,8 @@
             <div>CPU<span>{{ cpuCores }}核</span></div>
           </div>
         </div>
-
       </div>
-      <div class="wrap-center">
-
-      </div>
+      <div class="wrap-center"></div>
       <div class="wrap-right">
         <div style="margin-top: 12px;"
           v-for="{ nodeIp, cpuCores, gpuNum, gpuMemory, totalMemory, diskSize }, index in nodeList.filter(e => nodeSelect.includes(e.nodeIp))"
@@ -93,28 +96,58 @@
       </span>
     </template>
   </el-dialog>
-
 </template>
 
 <script setup lang="jsx">
 import pollApi from '~/vgpu/api/poll';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watchEffect } from 'vue';
 import BlockBox from '@/components/BlockBox.vue';
 import { Remove } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { bytesToGB } from '@/utils';
 
+// 数据列表相关
 const list = ref([])
+const loading = ref(true)
+
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
+// 对话框相关
 const dialogVisible = ref(false)
 const editId = ref(null)
-const nodeList = ref([])
-const nodeSelect = ref([])
 const input = ref('')
 const btnLoading = ref(false)
 
-const bytesToGB = (bytes) => {
-  return Math.round(bytes / (1024 * 1024 * 1024));
+// 节点选择相关
+const nodeList = ref([])
+const nodeSelect = ref([])
+
+// 计算分页后的数据
+const paginatedList = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return list.value.slice(start, end)
+})
+
+// watchEffect(()=>{
+//   console.log(currentPage.value, pageSize.value, 88)
+// })
+
+// 分页大小变化
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  currentPage.value = 1 // 切换每页条数时重置到第一页
 }
 
+// 当前页变化
+const handleCurrentChange = (val) => {
+  currentPage.value = val
+}
+
+// 确认操作
 const handleOk = async () => {
   if (!input.value) {
     ElMessage({
@@ -131,26 +164,33 @@ const handleOk = async () => {
     return;
   }
   btnLoading.value = true;
-  const nodes = nodeList.value.filter(e => nodeSelect.value.includes(e.nodeIp)).map(e => ({ nodeIp: e.nodeIp, nodeName: e.nodeName }))
-  let res;
-  if (editId.value) {
-    res = await pollApi.update({
-      pool_id: editId.value,
-      pool_name: input.value,
-      nodes
-    })
-  } else {
-    res = await pollApi.create({
-      pool_name: input.value,
-      nodes
-    })
+  try {
+    const nodes = nodeList.value.filter(e => nodeSelect.value.includes(e.nodeIp)).map(e => ({ nodeIp: e.nodeIp, nodeName: e.nodeName }))
+    let res;
+    if (editId.value) {
+      res = await pollApi.update({
+        pool_id: editId.value,
+        pool_name: input.value,
+        nodes
+      })
+    } else {
+      res = await pollApi.create({
+        pool_name: input.value,
+        nodes
+      })
+    }
+    if (res?.code === 200) {
+      getList();
+      dialogVisible.value = false;
+    }
+  } finally {
+    btnLoading.value = false;
   }
-  console.log(res, 'res')
-  getList();
+
   btnLoading.value = false;
-  dialogVisible.value = false;
 }
 
+// 复选框变化
 const handleCheckboxChange = (ip) => {
   const index = nodeSelect.value.indexOf(ip);
   if (index > -1) {
@@ -160,33 +200,44 @@ const handleCheckboxChange = (ip) => {
   }
 }
 
+// 删除操作
 const handleDelete = async (id) => {
   ElMessageBox.confirm(`确定要删除当前资源池吗？`, '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
-  }).then(async () => {
-    const res = await pollApi.delete({ pool_id: id })
-    if (res.code === 1) {
-      ElMessage.success('删除成功');
-      getList();
+    beforeClose: async (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true;
+        const res = await pollApi.delete({ pool_id: id });
+        if (res.code === 200) {
+          ElMessage.success('删除成功');
+          getList();
+          done();
+        }
+        instance.confirmButtonLoading = false;
+      } else {
+        done();
+      }
     }
   })
 }
 
+// 获取资源池列表
 const getList = async () => {
+  loading.value = true
   const res = await pollApi.getPollList()
+  loading.value = false
   list.value = res.data
+  total.value = res.data.length
 }
 
-
+// 初始化加载数据
 onMounted(async () => {
   getList();
   const res = await pollApi.getNodeList()
   nodeList.value = res.data
-
 });
-
 </script>
 
 <style scoped lang="scss">
