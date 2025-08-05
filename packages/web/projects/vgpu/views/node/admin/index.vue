@@ -5,7 +5,7 @@
     </template>
   </list-header>
 
-  <preview-bar :handle-click=handleClick />
+  <preview-bar :handle-click=handleClick :key="componentKey" />
 
   <table-plus :api="nodeApi.getNodeList()" :columns="columns" :rowAction="rowAction" :searchSchema="searchSchema"
     :hasPagination="false" style="height: auto" hideTag ref="table" staticPage>
@@ -36,15 +36,18 @@
 <script setup lang="jsx">
 import nodeApi from '~/vgpu/api/node';
 import searchSchema from '~/vgpu/views/node/admin/searchSchema';
-import { useRouter } from 'vue-router';
 import PreviewBar from '~/vgpu/components/previewBar.vue';
-import { roundToDecimal } from '@/utils';
+import { bytesToGB, roundToDecimal } from '@/utils';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref } from 'vue';
+import useParentAction from '~/vgpu/hooks/useParentAction';
 
-const router = useRouter();
+
+const { sendRouteChange } = useParentAction();
 
 const table = ref();
+
+const componentKey = ref(0);
 
 // 节点选择相关
 const dialogVisible = ref(false)
@@ -61,7 +64,7 @@ const handleClick = async (params) => {
   const node = list.find(node => node.name === name);
   if (node) {
     const uuid = node.uid;
-    router.push(`/admin/vgpu/node/admin/${uuid}?nodeName=${name}`);
+    sendRouteChange(`/admin/vgpu/node/admin/${uuid}?nodeName=${name}`);
   } else {
     ElMessage.error('节点未找到');
   }
@@ -83,7 +86,8 @@ const handleOk = async () => {
       node_names
     })
     if (res?.code === 200) {
-      getList();
+      table.value.fetchData();
+      componentKey.value += 1;
       dialogVisible.value = false;
     }
   } finally {
@@ -153,6 +157,26 @@ const columns = [
     // },
   },
   {
+    title: 'CPU',
+    dataIndex: 'coreTotal',
+    render: ({ coreTotal }) => `${coreTotal}核`,
+  },
+  {
+    title: '内存',
+    dataIndex: 'memoryTotal',
+    render: ({ memoryTotal }) => `${bytesToGB(memoryTotal)}GiB`,
+  },
+  {
+    title: '磁盘',
+    dataIndex: 'diskSize',
+    render: ({ diskSize }) => `${bytesToGB(diskSize)}GiB`,
+  },
+  {
+    title: '所属资源池',
+    dataIndex: 'resourcePools',
+    render: ({ resourcePools }) => `${resourcePools.join('、')}`,
+  },
+  {
     title: '显卡数量',
     dataIndex: 'cardCnt',
   },
@@ -167,6 +191,7 @@ const columns = [
   },
   {
     title: '算力(已分配/总量)',
+    width: 120,
     dataIndex: 'used',
     render: ({ coreTotal, coreUsed, isExternal }) => (
       <span>
@@ -177,6 +202,7 @@ const columns = [
   {
     title: '显存(已分配/总量)',
     dataIndex: 'w',
+    width: 120,
     render: ({ memoryTotal, memoryUsed, isExternal }) => (
       <span>
         {isExternal ? '--' : roundToDecimal(memoryUsed / 1024, 1)}/
@@ -190,72 +216,72 @@ const rowAction = [
   {
     title: '查看详情',
     onClick: (row) => {
-      router.push(`/admin/vgpu/node/admin/${row.uid}?nodeName=${row.name}`);
+      sendRouteChange(`/admin/vgpu/node/admin/${row.uid}?nodeName=${row.name}`);
     },
   },
-  // {
-  //   title: '禁用',
-  //   hidden: (row) => !row.isSchedulable,
-  //   onClick: async (row) => {
-  //     ElMessageBox.confirm(`确认对该节点进行禁用操作？`, '操作确认', {
-  //       confirmButtonText: '确定',
-  //       cancelButtonText: '取消',
-  //       type: 'warning',
-  //     })
-  //         .then(async () => {
-  //           try {
-  //             await nodeApi.stop(
-  //                 {
-  //                   nodeName: row.name,
-  //                   switch: 'on'
-  //                 }
-  //             ).then(
-  //                 () => {
-  //                   setTimeout(() => {
-  //                     ElMessage.success('节点禁用成功');
-  //                     table.value.fetchData();
-  //                   }, 500);
-  //                 }
-  //             )
-  //           } catch (error) {
-  //             ElMessage.error(error.message);
-  //           }
-  //         })
-  //         .catch(() => {});
-  //   },
-  // },
-  // {
-  //   title: '开启',
-  //   hidden: (row) => row.isSchedulable,
-  //   disabled: (row) => row.isExternal,
-  //   onClick: async (row) => {
-  //     ElMessageBox.confirm(`确认对该节点进行开启调度操作？`, '操作确认', {
-  //       confirmButtonText: '确定',
-  //       cancelButtonText: '取消',
-  //       type: 'warning',
-  //     })
-  //         .then(async () => {
-  //           try {
-  //             await nodeApi.stop(
-  //                 {
-  //                   nodeName: row.name,
-  //                   switch: 'off'
-  //                 }
-  //             ).then(
-  //                 () => {
-  //                   setTimeout(() => {
-  //                     ElMessage.success('节点开启调度成功');
-  //                     table.value.fetchData();
-  //                   }, 500);
-  //                 }
-  //             )
-  //           } catch (error) {
-  //             ElMessage.error(error.message);
-  //           }
-  //         })
-  //         .catch(() => {});
-  //   },
-  // },
+  {
+    title: '禁用',
+    hidden: (row) => !row.isSchedulable,
+    onClick: async (row) => {
+      ElMessageBox.confirm(`确认对该节点进行禁用操作？`, '操作确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(async () => {
+          try {
+            await nodeApi.stop(
+              {
+                nodeName: row.name,
+                status: 'DISABLED'
+              }
+            ).then(
+              () => {
+                setTimeout(() => {
+                  ElMessage.success('节点禁用成功');
+                  table.value.fetchData();
+                }, 500);
+              }
+            )
+          } catch (error) {
+            ElMessage.error(error.message);
+          }
+        })
+        .catch(() => { });
+    },
+  },
+  {
+    title: '开启',
+    hidden: (row) => row.isSchedulable,
+    disabled: (row) => row.isExternal,
+    onClick: async (row) => {
+      ElMessageBox.confirm(`确认对该节点进行开启调度操作？`, '操作确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(async () => {
+          try {
+            await nodeApi.stop(
+              {
+                nodeName: row.name,
+                status: 'ENABLE'
+              }
+            ).then(
+              () => {
+                setTimeout(() => {
+                  ElMessage.success('节点开启调度成功');
+                  table.value.fetchData();
+                }, 500);
+              }
+            )
+          } catch (error) {
+            ElMessage.error(error.message);
+          }
+        })
+        .catch(() => { });
+    },
+  },
 ];
 </script>
 
