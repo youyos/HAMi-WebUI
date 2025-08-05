@@ -8,7 +8,7 @@
   <div v-loading="loading" style="min-height: 90px;">
     <block-box
       v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in paginatedList"
-      :key="poolId">
+      :key="poolId" style="margin: 15px 0 0 0;">
       <el-row style="align-items: center;">
         <div class="left">
           <b class="title">{{ poolName }}</b>
@@ -36,7 +36,7 @@
   </div>
 
   <!-- 分页组件 -->
-  <el-pagination background v-model:current-page="currentPage" v-model:page-size="pageSize"
+  <el-pagination style="margin-top: 15px;" background v-model:current-page="currentPage" v-model:page-size="pageSize"
     layout="total, ->, sizes, jumper, prev, next" :page-sizes="[10, 20, 50, 100]" :total="list.length"
     @size-change="handleSizeChange" @current-change="handleCurrentChange" />
 
@@ -90,10 +90,8 @@
       </div>
     </div>
     <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button :loading="btnLoading" type="primary" @click="handleOk">确认</el-button>
-      </span>
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button :loading="btnLoading" type="primary" @click="handleOk">确认</el-button>
     </template>
   </el-dialog>
 </template>
