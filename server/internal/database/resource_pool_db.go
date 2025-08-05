@@ -118,6 +118,37 @@ func QueryNodesByPoolId(poolId int64) ([]*Nodes, error) {
 	return nodes, nil
 }
 
+func QueryDistinctNodes() ([]*Nodes, error) {
+	// 执行查询
+	rows, err := db.Query("select distinct nodes.node_name, nodes.node_ip from nodes")
+	if err != nil {
+		log.Infof("Query failed: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	// 存放结果的切片
+	nodes := make([]*Nodes, 0)
+
+	// 遍历每一行
+	for rows.Next() {
+		var node Nodes
+		err := rows.Scan(&node.NodeName, &node.NodeIp)
+		if err != nil {
+			log.Infof("Scan failed: %v", err)
+			return nil, err
+		}
+		nodes = append(nodes, &node)
+	}
+
+	// 检查 rows 是否遍历中出错
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return nodes, nil
+}
+
 func InsertResourcePool(poolName string) (int64, error) {
 	querySql := "INSERT INTO resource_pool(pool_name) VALUES (?)"
 

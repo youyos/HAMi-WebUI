@@ -46,6 +46,26 @@ service Node {
       summary: "禁用启用节点";
     };
   }
+
+  rpc DiscoveredNode (DiscoveredNodeRequest) returns (DiscoveredNodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/node/discovered",
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "发现节点";
+    };
+  }
+
+  rpc JoinNode (JoinNodeRequest) returns (JoinNodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/node/join",
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "加入节点";
+    };
+  }
 }
 
 message GetSummaryReq {
@@ -119,4 +139,28 @@ message UpdateNodeStatusRequest {
 message UpdateNodeStatusResponse {
   int32 code =  1;
   string message =  2;
+}
+
+
+message DiscoveredNodeRequest {
+
+}
+
+message DiscoveredNodeResponse {
+  repeated DiscoveredNodeInfo list = 1;
+}
+
+message DiscoveredNodeInfo{
+  string node_ip = 1;
+  string node_name = 2;
+}
+
+message JoinNodeRequest{
+  repeated string node_names = 1;
+}
+
+
+message JoinNodeResponse {
+  int32 code = 1;
+  string message = 2;
 }

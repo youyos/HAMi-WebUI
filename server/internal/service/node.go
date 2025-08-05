@@ -105,6 +105,29 @@ func (s *NodeService) UpdateNodeStatus(ctx context.Context, req *pb.UpdateNodeSt
 	return &pb.UpdateNodeStatusResponse{Code: 200, Message: "成功"}, nil
 }
 
+func (s *NodeService) DiscoveredNode(ctx context.Context, req *pb.DiscoveredNodeRequest) (*pb.DiscoveredNodeResponse, error) {
+	nodes, err := s.uc.DiscoveredNode()
+	if err != nil {
+		return nil, err
+	}
+
+	var list []*pb.DiscoveredNodeInfo
+	for _, value := range nodes {
+		list = append(list, &pb.DiscoveredNodeInfo{NodeIp: value.NodeIp, NodeName: value.NodeName})
+	}
+
+	return &pb.DiscoveredNodeResponse{List: list}, nil
+}
+
+func (s *NodeService) JoinNode(ctx context.Context, req *pb.JoinNodeRequest) (*pb.JoinNodeResponse, error) {
+	err := s.uc.JoinNode(req.NodeNames)
+	if err != nil {
+		return &pb.JoinNodeResponse{Code: 500, Message: err.Error()}, err
+	}
+
+	return &pb.JoinNodeResponse{Code: 200, Message: "成功"}, nil
+}
+
 func (s *NodeService) buildNodeReply(ctx context.Context, node *biz.Node) (*pb.NodeReply, error) {
 	nodeReply := &pb.NodeReply{
 		Name:                    node.Name,

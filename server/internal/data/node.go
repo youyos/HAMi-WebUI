@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 	"vgpu/internal/biz"
+	"vgpu/internal/database"
 	"vgpu/internal/provider"
 	"vgpu/internal/provider/ascend"
 	"vgpu/internal/provider/hygon"
@@ -104,7 +105,8 @@ func (r *nodeRepo) updateLocalNodes() {
 		r.nodes = n
 
 		var all []*biz.Node
-		allNodes, _ := r.nodeLister.List(labels.Everything())
+
+		allNodes, _ := r.nodeLister.List(labels.Set{"gpu": "on"}.AsSelector())
 		for _, node := range allNodes {
 			bizNode := r.fetchNodeInfo(node)
 			gpuNode := n[k8stypes.UID(bizNode.Uid)]
@@ -145,8 +147,6 @@ func (r *nodeRepo) onDeletedNode(obj interface{}) {
 }
 
 func (r *nodeRepo) fetchNodeInfo(node *corev1.Node) *biz.Node {
-	//b, _ := json.MarshalIndent(node, "", "  ")
-	//fmt.Println(string(b))
 	n := &biz.Node{IsSchedulable: !node.Spec.Unschedulable}
 	for _, addr := range node.Status.Addresses {
 		if addr.Type == corev1.NodeInternalIP {
@@ -159,6 +159,7 @@ func (r *nodeRepo) fetchNodeInfo(node *corev1.Node) *biz.Node {
 			n.IsReady = true
 		}
 	}
+
 	n.Uid = string(node.UID)
 	n.Name = node.Name
 	n.OSImage = node.Status.NodeInfo.OSImage
@@ -169,6 +170,7 @@ func (r *nodeRepo) fetchNodeInfo(node *corev1.Node) *biz.Node {
 	n.KubeProxyVersion = node.Status.NodeInfo.KubeProxyVersion
 	n.Architecture = strings.ToUpper(node.Status.NodeInfo.Architecture)
 	n.CreationTimestamp = node.CreationTimestamp.Format("2006-01-02 15:04:05")
+	n.Lables = node.Labels
 
 	capacity := node.Status.Capacity
 	allocatable := node.Status.Allocatable
@@ -242,7 +244,6 @@ func (r *nodeRepo) FindDeviceByAliasId(aliasId string) (*biz.DeviceInfo, error) 
 	return nil, errors.New(fmt.Sprintf("aliasID:%s device not found", aliasId))
 }
 
-// DisableNode 禁用节点（标记为不可调度并排空Pod）
 func (r *nodeRepo) EnableNode(ctx context.Context, nodeName string) error {
 	// 1. 标记为可调度
 	patch := []byte(`{"spec":{"unschedulable":false}}`)
@@ -266,7 +267,6 @@ func (r *nodeRepo) EnableNode(ctx context.Context, nodeName string) error {
 	return nil
 }
 
-// DisableNode 禁用节点（标记为不可调度并排空Pod）
 func (r *nodeRepo) DisableNode(ctx context.Context, nodeName string) error {
 	// 1. 标记为不可调度
 	patch := []byte(`{"spec":{"unschedulable":true}}`)
@@ -286,6 +286,60 @@ func (r *nodeRepo) DisableNode(ctx context.Context, nodeName string) error {
 	//if err := r.evictPodsOnNode(ctx, nodeName); err != nil {
 	//	return fmt.Errorf("驱逐 Pod 失败: %v", err)
 	//}
+	return nil
+}
+
+func (r *nodeRepo) DiscoveredNode() ([]*database.Nodes, error) {
+	distinctNodes, err := database.QueryDistinctNodes()
+	if err != nil {
+		return nil, err
+	}
+
+	ipSet := make(map[string]struct{})
+	for _, value := range distinctNodes {
+		ipSet[value.NodeIp] = struct{}{}
+	}
+
+	var discoverNodes []*database.Nodes
+	for _, value := range r.allNodes {
+		if value.Lables["gpu"] == "on" {
+			continue
+		}
+		log.Infof("发现节点%s", value.IP)
+		if _, found := ipSet[value.IP]; !found {
+			discoverNodes = append(discoverNodes, &database.Nodes{
+				NodeIp:   value.IP,
+				NodeName: value.Name,
+			})
+		}
+	}
+
+	return discoverNodes, err
+}
+
+func (r *nodeRepo) JoinNode(nodeNames []string) error {
+	for _, nodeName := range nodeNames {
+		err := r.labelNode(nodeName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *nodeRepo) labelNode(nodeName string) error {
+	node, err := r.data.k8sCl.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	node.Labels["gpu"] = "on"
+	_, err = r.data.k8sCl.CoreV1().Nodes().Update(context.TODO(), node, metav1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to label node: %v", err)
+	}
+
+	fmt.Printf("Successfully labeled node %s\n", nodeName)
 	return nil
 }
 

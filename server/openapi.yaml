@@ -29,6 +29,54 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/node/discovered:
+        post:
+            tags:
+                - Node
+            operationId: Node_DiscoveredNode
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DiscoveredNodeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DiscoveredNodeResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/node/join:
+        post:
+            tags:
+                - Node
+            operationId: Node_JoinNode
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/JoinNodeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/JoinNodeResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/node/status/update:
         post:
             tags:
@@ -130,6 +178,23 @@ components:
                 nodeCount:
                     type: integer
                     format: int32
+        DiscoveredNodeInfo:
+            type: object
+            properties:
+                nodeIp:
+                    type: string
+                nodeName:
+                    type: string
+        DiscoveredNodeRequest:
+            type: object
+            properties: {}
+        DiscoveredNodeResponse:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DiscoveredNodeInfo'
         GetAllNodesReq:
             type: object
             properties:
@@ -166,6 +231,21 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        JoinNodeRequest:
+            type: object
+            properties:
+                nodeNames:
+                    type: array
+                    items:
+                        type: string
+        JoinNodeResponse:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
         NodeReply:
             type: object
             properties:

@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"vgpu/internal/database"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -27,6 +28,7 @@ type Node struct {
 	AvailableMemory         int64 // 可用内存（字节）
 	DiskTotal               int64 // 磁盘总大小（字节）
 	StorageNum              int64
+	Lables                  map[string]string
 }
 
 type DeviceInfo struct {
@@ -60,6 +62,8 @@ type NodeRepo interface {
 	FindDeviceByAliasId(string) (*DeviceInfo, error)
 	EnableNode(context.Context, string) error
 	DisableNode(context.Context, string) error
+	DiscoveredNode() ([]*database.Nodes, error)
+	JoinNode([]string) error
 }
 
 type NodeUsecase struct {
@@ -97,4 +101,12 @@ func (uc *NodeUsecase) EnableNode(ctx context.Context, nodeName string) error {
 
 func (uc *NodeUsecase) DisableNode(ctx context.Context, nodeName string) error {
 	return uc.repo.DisableNode(ctx, nodeName)
+}
+
+func (uc *NodeUsecase) DiscoveredNode() ([]*database.Nodes, error) {
+	return uc.repo.DiscoveredNode()
+}
+
+func (uc *NodeUsecase) JoinNode(nodeNames []string) error {
+	return uc.repo.JoinNode(nodeNames)
 }
