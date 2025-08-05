@@ -106,7 +106,7 @@ func (r *nodeRepo) updateLocalNodes() {
 
 		var all []*biz.Node
 
-		allNodes, _ := r.nodeLister.List(labels.Set{"gpu": "on"}.AsSelector())
+		allNodes, _ := r.nodeLister.List(labels.Everything())
 		for _, node := range allNodes {
 			bizNode := r.fetchNodeInfo(node)
 			gpuNode := n[k8stypes.UID(bizNode.Uid)]
