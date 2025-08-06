@@ -8,6 +8,15 @@ import (
 
 var db *sql.DB
 
+type DatabaseConfig struct {
+	Driver         string `yaml:"driver"`
+	DataSourceName string `yaml:"dataSourceName"`
+}
+
+type Config struct {
+	Database DatabaseConfig `yaml:"database"`
+}
+
 func InitDB(config *DatabaseConfig) {
 	var err error
 	switch config.Driver {

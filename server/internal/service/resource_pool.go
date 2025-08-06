@@ -109,6 +109,17 @@ func (s *ResourcePoolService) Delete(ctx context.Context, req *pb.ResourcePoolDe
 	return &pb.BaseResponse{Code: 200, Message: "成功"}, nil
 }
 
+func (s *ResourcePoolService) RemoveNode(ctx context.Context, req *pb.RemoveNodeRequest) (*pb.BaseResponse, error) {
+	log.Info("RemoveNode called", req)
+	nodeId := req.NodeId
+	num, err := database.DeleteNodeById(nodeId)
+	if err != nil {
+		return &pb.BaseResponse{Code: 500, Message: "移除节点失败"}, nil
+	}
+	log.Infof("RemoveNode success poolId: %d, 影响行数: %d", nodeId, num)
+	return &pb.BaseResponse{Code: 200, Message: "成功"}, nil
+}
+
 func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolListRequest) (*pb.ResourcePoolListResponse, error) {
 	log.Info("GetResourcePoolList", req)
 
@@ -137,7 +148,10 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 			poolData.TotalMemory = poolData.TotalMemory + node.TotalMemory
 			poolData.AvailableMemory = poolData.AvailableMemory + node.AvailableMemory
 			poolData.DiskSize = poolData.DiskSize + node.DiskTotal
-			poolData.NodeList = append(poolData.NodeList, n.NodeIp)
+			poolData.NodeList = append(poolData.NodeList, &pb.Nodes{
+				NodeIp:   n.NodeIp,
+				NodeName: n.NodeName,
+			})
 		}
 		data = append(data, &poolData)
 	}
@@ -165,6 +179,7 @@ func (s *ResourcePoolService) GetDetail(ctx context.Context, req *pb.ResourcePoo
 			continue
 		}
 		nodeReply, err := s.buildNodeReply(ctx, node)
+		nodeReply.NodeId = poolNode.Id
 		if err != nil {
 			return nil, err
 		}

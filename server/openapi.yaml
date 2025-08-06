@@ -3,16 +3,82 @@
 
 openapi: 3.0.3
 info:
-    title: Node API
+    title: ResourcePool API
     version: 0.0.1
 paths:
-    /v1/node:
+    /v1/available/nodes:
         get:
             tags:
-                - Node
-            operationId: Node_GetNode
+                - ResourcePool
+            operationId: ResourcePool_GetAvailableNodes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AvailableNodesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/create:
+        post:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResourcePoolCreateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/delete:
+        post:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_Delete
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResourcePoolDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/detail:
+        post:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_GetDetail
             parameters:
-                - name: uid
+                - name: poolId
                   in: query
                   schema:
                     type: string
@@ -22,23 +88,41 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/NodeReply'
+                                $ref: '#/components/schemas/ResourcePoolDetailResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/node/discovered:
+    /v1/resource/pool/list:
+        get:
+            tags:
+                - ResourcePool
+            operationId: ResourcePool_List
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResourcePoolListResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/resource/pool/removeNode:
         post:
             tags:
-                - Node
-            operationId: Node_DiscoveredNode
+                - ResourcePool
+            operationId: ResourcePool_RemoveNode
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/DiscoveredNodeRequest'
+                            $ref: '#/components/schemas/RemoveNodeRequest'
                 required: true
             responses:
                 "200":
@@ -46,23 +130,23 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/DiscoveredNodeResponse'
+                                $ref: '#/components/schemas/BaseResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/node/join:
+    /v1/resource/pool/update:
         post:
             tags:
-                - Node
-            operationId: Node_JoinNode
+                - ResourcePool
+            operationId: ResourcePool_Update
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/JoinNodeRequest'
+                            $ref: '#/components/schemas/ResourcePoolUpdateRequest'
                 required: true
             responses:
                 "200":
@@ -70,79 +154,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/JoinNodeResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/node/status/update:
-        post:
-            tags:
-                - Node
-            operationId: Node_UpdateNodeStatus
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateNodeStatusRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateNodeStatusResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/nodes:
-        post:
-            tags:
-                - Node
-            operationId: Node_GetAllNodes
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/GetAllNodesReq'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/NodesReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/summary:
-        post:
-            tags:
-                - Node
-            operationId: Node_GetSummary
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/GetSummaryReq'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/DeviceSummaryReply'
+                                $ref: '#/components/schemas/BaseResponse'
                 default:
                     description: Default error response
                     content:
@@ -151,78 +163,40 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        DeviceSummaryReply:
+        AvailableNodesInfo:
             type: object
             properties:
-                vgpuUsed:
-                    type: integer
-                    format: int32
-                vgpuTotal:
-                    type: integer
-                    format: int32
-                coreUsed:
-                    type: integer
-                    format: int32
-                coreTotal:
-                    type: integer
-                    format: int32
-                memoryUsed:
-                    type: integer
-                    format: int32
-                memoryTotal:
-                    type: integer
-                    format: int32
-                gpuCount:
-                    type: integer
-                    format: int32
-                nodeCount:
-                    type: integer
-                    format: int32
-        DiscoveredNodeInfo:
-            type: object
-            properties:
-                nodeIp:
-                    type: string
                 nodeName:
                     type: string
-        DiscoveredNodeRequest:
-            type: object
-            properties: {}
-        DiscoveredNodeResponse:
+                cpuCores:
+                    type: string
+                gpuNum:
+                    type: string
+                gpuMemory:
+                    type: string
+                totalMemory:
+                    type: string
+                diskSize:
+                    type: string
+                nodeIp:
+                    type: string
+        AvailableNodesResponse:
             type: object
             properties:
-                list:
+                data:
                     type: array
                     items:
-                        $ref: '#/components/schemas/DiscoveredNodeInfo'
-        GetAllNodesReq:
+                        $ref: '#/components/schemas/AvailableNodesInfo'
+        BaseResponse:
             type: object
             properties:
-                filters:
-                    $ref: '#/components/schemas/GetAllNodesReq_Filters'
-        GetAllNodesReq_Filters:
-            type: object
-            properties:
-                ip:
+                code:
+                    type: integer
+                    format: int32
+                message:
                     type: string
-                type:
-                    type: string
-                isSchedulable:
-                    type: string
-        GetSummaryReq:
-            type: object
-            properties:
-                filters:
-                    $ref: '#/components/schemas/GetSummaryReq_Filters'
-        GetSummaryReq_Filters:
-            type: object
-            properties:
-                type:
-                    type: string
-                nodeUid:
-                    type: string
-                deviceId:
-                    type: string
+                data:
+                    type: object
         GoogleProtobufAny:
             type: object
             properties:
@@ -231,22 +205,14 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        JoinNodeRequest:
+        Nodes:
             type: object
             properties:
-                nodeNames:
-                    type: array
-                    items:
-                        type: string
-        JoinNodeResponse:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    format: int32
-                message:
+                nodeIp:
                     type: string
-        NodeReply:
+                nodeName:
+                    type: string
+        PoolNodeReply:
             type: object
             properties:
                 ip:
@@ -271,8 +237,7 @@ components:
                 coreTotal:
                     type: string
                 memoryUsed:
-                    type: integer
-                    format: int32
+                    type: string
                 memoryTotal:
                     type: string
                 uid:
@@ -300,17 +265,75 @@ components:
                     type: string
                 diskSize:
                     type: string
-                resourcePools:
+                nodeId:
+                    type: string
+        RemoveNodeRequest:
+            type: object
+            properties:
+                nodeId:
+                    type: string
+        ResourcePoolCreateRequest:
+            type: object
+            properties:
+                poolName:
+                    type: string
+                nodes:
                     type: array
                     items:
-                        type: string
-        NodesReply:
+                        $ref: '#/components/schemas/Nodes'
+        ResourcePoolDeleteRequest:
+            type: object
+            properties:
+                poolId:
+                    type: string
+        ResourcePoolDetailResponse:
             type: object
             properties:
                 list:
                     type: array
                     items:
-                        $ref: '#/components/schemas/NodeReply'
+                        $ref: '#/components/schemas/PoolNodeReply'
+        ResourcePoolListData:
+            type: object
+            properties:
+                poolId:
+                    type: string
+                poolName:
+                    type: string
+                cpuCores:
+                    type: string
+                nodeNum:
+                    type: string
+                gpuNum:
+                    type: string
+                availableMemory:
+                    type: string
+                totalMemory:
+                    type: string
+                diskSize:
+                    type: string
+                nodeList:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Nodes'
+        ResourcePoolListResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ResourcePoolListData'
+        ResourcePoolUpdateRequest:
+            type: object
+            properties:
+                poolId:
+                    type: string
+                poolName:
+                    type: string
+                nodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Nodes'
         Status:
             type: object
             properties:
@@ -327,20 +350,5 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        UpdateNodeStatusRequest:
-            type: object
-            properties:
-                nodeName:
-                    type: string
-                status:
-                    type: string
-        UpdateNodeStatusResponse:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    format: int32
-                message:
-                    type: string
 tags:
-    - name: Node
+    - name: ResourcePool

@@ -22,15 +22,17 @@ type podRepo struct {
 	data      *Data
 	podLister listerscorev1.PodLister
 	pods      map[k8stypes.UID]*biz.PodInfo
+	allPods   []*biz.PodInfo
 	mutex     sync.RWMutex
 	log       *log.Helper
 }
 
 func NewPodRepo(data *Data, logger log.Logger) biz.PodRepo {
 	repo := &podRepo{
-		data: data,
-		pods: make(map[k8stypes.UID]*biz.PodInfo),
-		log:  log.NewHelper(logger),
+		data:    data,
+		pods:    make(map[k8stypes.UID]*biz.PodInfo),
+		allPods: []*biz.PodInfo{},
+		log:     log.NewHelper(logger),
 	}
 	repo.init()
 	return repo
@@ -91,8 +93,9 @@ func (r *podRepo) addPod(pod *corev1.Pod, nodeID string, devices biz.PodDevices)
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	ctrs := r.fetchContainerInfo(pod)
-	pi := &biz.PodInfo{Name: pod.Name, UID: pod.UID, Namespace: pod.Namespace, NodeID: nodeID, Devices: devices, Ctrs: ctrs}
+	pi := &biz.PodInfo{Name: pod.Name, UID: pod.UID, Namespace: pod.Namespace, NodeID: nodeID, Devices: devices, Ctrs: ctrs, Labels: pod.Labels}
 	r.pods[pod.UID] = pi
+	r.allPods = append(r.allPods, pi)
 	r.log.Infof("Pod added: Name: %s, UID: %s, Namespace: %s, NodeID: %s", pod.Name, pod.UID, pod.Namespace, nodeID)
 }
 
@@ -185,7 +188,11 @@ func (r *podRepo) GetStartTime(pod *corev1.Pod) time.Time {
 func (r *podRepo) ListAll(context.Context) ([]*biz.Container, error) {
 	var containerList []*biz.Container
 	for _, pod := range r.pods {
-		containerList = append(containerList, pod.Ctrs...)
+		TpiID := pod.Labels["tpi-id"]
+		for _, container := range pod.Ctrs {
+			container.TpiID = TpiID
+			containerList = append(containerList, container)
+		}
 	}
 	return containerList, nil
 }

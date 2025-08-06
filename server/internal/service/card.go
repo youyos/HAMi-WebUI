@@ -7,6 +7,7 @@ import (
 	"strings"
 	pb "vgpu/api/v1"
 	"vgpu/internal/biz"
+	"vgpu/internal/database"
 )
 
 type CardService struct {
@@ -51,6 +52,11 @@ func (s *CardService) GetAllGPUs(ctx context.Context, req *pb.GetAllGpusReq) (*p
 		gpu.NodeUid = device.NodeUid
 		gpu.Health = device.Health
 		gpu.Mode = device.Mode
+		resourcePoolNames, err := database.QueryResourceNamesByNodeName(device.NodeName)
+		if err != nil {
+			return nil, err
+		}
+		gpu.ResourcePools = resourcePoolNames
 
 		vGPU, core, memory, err := s.pod.StatisticsByDeviceId(ctx, device.AliasId)
 		if err == nil {

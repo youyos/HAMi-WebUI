@@ -61,11 +61,16 @@ message ContainerReply {
   string end_time = 11;
   string pod_uid = 12;
   string node_uid = 13;
-  string resource_pool = 14;
+  repeated string resource_pool = 14;
   string flavor = 15;
   string priority = 16;
   string namespace = 17;
   repeated string device_ids = 18;
+  string pod_name = 19;
+  string task_type = 20;
+  string shixun_name = 21;
+  string role = 22;
+  string username = 23;
 }
 
 message ContainersReply {

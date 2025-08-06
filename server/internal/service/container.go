@@ -2,11 +2,16 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/go-kratos/kratos/v2/log"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 	pb "vgpu/api/v1"
 	"vgpu/internal/biz"
+	"vgpu/internal/database"
+	"vgpu/internal/utils"
 )
 
 var statusOrder = map[string]int{
@@ -86,6 +91,32 @@ func (s *ContainerService) GetAllContainers(ctx context.Context, req *pb.GetAllC
 		if containerReply.DeviceIds == nil {
 			continue
 		}
+
+		resourcePoolNames, err := database.QueryResourceNamesByNodeName(container.NodeName)
+		if err != nil {
+			return nil, err
+		}
+
+		containerReply.ResourcePool = resourcePoolNames
+		resourcePoolName, err := database.Get("big_model_resource_pool_name")
+		if err != nil {
+			return nil, err
+		}
+
+		if slices.Contains(resourcePoolNames, resourcePoolName.(string)) {
+			containerReply.TaskType = "big_model"
+		} else {
+			containerReply.TaskType = "shixun"
+		}
+
+		if len(container.TpiID) > 0 {
+			err := s.setShixunData(ctx, containerReply, container.TpiID)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		containerReply.PodName = container.PodName
 		containerReply.CreateTime = container.CreateTime.Format(time.RFC3339)
 		res.Items = append(res.Items, containerReply)
 	}
@@ -126,4 +157,35 @@ func (s *ContainerService) GetContainer(ctx context.Context, req *pb.GetContaine
 	}
 	ctrReply.CreateTime = container.CreateTime.Format(time.RFC3339)
 	return ctrReply, nil
+}
+
+func (s *ContainerService) setShixunData(ctx context.Context, containerReply *pb.ContainerReply, tpiId string) error {
+	webDomain, err := database.Get("web_domain")
+	if err != nil {
+		return err
+	}
+
+	client := utils.GetDefaultClient()
+	url := webDomain.(string) + "/api/myshixuns/get_shixun_info.json"
+	log.Info("Get shixun info url: ", url, " tpiId: ", tpiId)
+	jsonData := map[string]interface{}{
+		"tpiID": tpiId,
+	}
+	body, status, err := client.PostJSON(ctx, url, jsonData, nil)
+	if err != nil {
+		return err
+	}
+	log.Infof("Get shixun info: %s, status: %d", string(body), status)
+
+	var respMap map[string]interface{}
+	err = json.Unmarshal(body, &respMap)
+	log.Info("Get shixun info: ", respMap, "----", respMap["status"])
+	if respMap["status"].(float64) == 0 {
+		data := respMap["data"].(map[string]interface{})
+		containerReply.ShixunName = data["shixun_name"].(string)
+		containerReply.Role = data["user_identity"].(string)
+		containerReply.Username = data["user_name"].(string)
+	}
+
+	return nil
 }

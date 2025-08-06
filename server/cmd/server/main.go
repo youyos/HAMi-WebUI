@@ -34,6 +34,7 @@ func main() {
 	flag.Parse()
 	var ctx = context.Background()
 
+	database.InitConfigPath(flagconf)
 	if err := initDatabase(); err != nil {
 		log.Errorf("数据库初始化失败: %v", err)
 		os.Exit(1)
@@ -71,13 +72,22 @@ func getNodeSelectors(c *conf.Bootstrap) map[string]string {
 }
 
 func initDatabase() error {
-	config, err := database.LoadConfig(flagconf)
-	log.Infof("config: %+v", config)
+	driver, err := database.Get("database.driver")
 	if err != nil {
 		log.Errorf("Failed to load config: %v", err)
 		return err
 	}
-	database.InitDB(&config.Database)
-	log.Infof("初始化%s成功", config.Database.Driver)
+
+	dataSourceName, err := database.Get("database.dataSourceName")
+	if err != nil {
+		log.Errorf("Failed to load config: %v", err)
+		return err
+	}
+
+	var config = &database.DatabaseConfig{}
+	config.Driver = driver.(string)
+	config.DataSourceName = dataSourceName.(string)
+	database.InitDB(config)
+	log.Infof("初始化%s成功", driver)
 	return nil
 }

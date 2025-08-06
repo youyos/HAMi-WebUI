@@ -180,6 +180,37 @@ func QueryResourceNamesByIp(nodeIp string) ([]string, error) {
 	return resourcePoolNames, nil
 }
 
+func QueryResourceNamesByNodeName(nodeName string) ([]string, error) {
+	// 执行查询
+	rows, err := db.Query("select pool_name from resource_pool where id in (select distinct pool_id from nodes where node_name=?)", nodeName)
+	if err != nil {
+		log.Infof("Query failed: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	// 存放结果的切片
+	resourcePoolNames := make([]string, 0)
+
+	// 遍历每一行
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			log.Infof("Scan failed: %v", err)
+			return nil, err
+		}
+		resourcePoolNames = append(resourcePoolNames, name)
+	}
+
+	// 检查 rows 是否遍历中出错
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return resourcePoolNames, nil
+}
+
 func InsertResourcePool(poolName string) (int64, error) {
 	querySql := "INSERT INTO resource_pool(pool_name) VALUES (?)"
 
@@ -260,6 +291,21 @@ func DeleteResourcePoolById(poolId int64) (int64, error) {
 
 func DeleteNodesByPoolId(poolId int64) (int64, error) {
 	result, err := db.Exec("DELETE FROM nodes WHERE pool_id = ?", poolId)
+	if err != nil {
+		return 0, fmt.Errorf("delete failed: %w", err)
+	}
+
+	// 返回影响的行数（0 表示未删除任何数据）
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("get rows affected failed: %w", err)
+	}
+
+	return rowsAffected, nil
+}
+
+func DeleteNodeById(nodeId int64) (int64, error) {
+	result, err := db.Exec("DELETE FROM nodes WHERE id = ?", nodeId)
 	if err != nil {
 		return 0, fmt.Errorf("delete failed: %w", err)
 	}

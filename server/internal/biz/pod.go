@@ -21,6 +21,7 @@ type Container struct {
 	Priority         string
 	NodeUID          string
 	Namespace        string
+	TpiID            string
 }
 
 type PodInfo struct {
@@ -31,6 +32,7 @@ type PodInfo struct {
 	Devices   PodDevices
 	CtrIDs    []string
 	Ctrs      []*Container
+	Labels    map[string]string
 }
 
 type PodRepo interface {
