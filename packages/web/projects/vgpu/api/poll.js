@@ -2,7 +2,6 @@ import request from '@/utils/request';
 
 const apiPrefix = '/api/vgpu';
 
-
 class pollApi {
   getPollList(params) {
     return request({
@@ -42,6 +41,14 @@ class pollApi {
       method: 'POST',
       data,
     });
+  }
+
+  getDetailNodeList(data) {
+    return {
+      url: apiPrefix + '/v1/resource/pool/detail',
+      method: 'post',
+      data,
+    };
   }
 
   // getNodes(data) {
