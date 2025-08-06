@@ -1,6 +1,11 @@
 import { timeParse } from '@/utils';
 
-export const getRangeOptions = ({ core = [], memory = [] }) => {
+export const getRangeOptions = ({
+  core = [],
+  memory = [],
+  cpu = [],
+  internal = [],
+}) => {
   return {
     legend: {
       // data: [],
@@ -113,6 +118,72 @@ export const getRangeOptions = ({ core = [], memory = [] }) => {
         },
         lineStyle: {
           color: 'rgb(145, 204, 117)', // 设置线条颜色为橙色
+        },
+      },
+      {
+        name: 'CPU',
+        data: cpu,
+        type: 'line',
+        areaStyle: {
+          normal: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(255, 99, 71, 0.16)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(255, 99, 71, 0.00)',
+                },
+              ],
+              global: false,
+            },
+          },
+        },
+        itemStyle: {
+          color: 'rgb(255, 99, 71)',
+        },
+        lineStyle: {
+          color: 'rgb(255, 99, 71)',
+        },
+      },
+      {
+        name: '内存',
+        data: internal,
+        type: 'line',
+        areaStyle: {
+          normal: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(138, 43, 226, 0.16)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(138, 43, 226, 0.00)',
+                },
+              ],
+              global: false,
+            },
+          },
+        },
+        itemStyle: {
+          color: 'rgb(138, 43, 226)',
+        },
+        lineStyle: {
+          color: 'rgb(138, 43, 226)',
         },
       },
     ],

@@ -1,32 +1,19 @@
 <template>
   <ul class="preview">
     <li class="preview-item" style="width: 20%; flex: none" v-if="!hidePie">
-      <block-box
-        :title="`${type === 'node' ? '节点显卡厂商分布' : '显卡类型分布'}`"
-        class="nodeCard"
-      >
+      <block-box :title="`${type === 'node' ? '节点显卡厂商分布' : '显卡类型分布'}`" class="nodeCard">
         <div class="pie">
-          <echarts-plus
-            :options="getPreviewBarPie(pieData, props)"
-            :onClick="handlePieClick"
-            ref="echartsRef"
-          />
+          <echarts-plus :options="getPreviewBarPie(pieData, props)" :onClick="handlePieClick" ref="echartsRef" />
         </div>
 
         <ul class="nodeCard-legend">
-          <li
-            v-for="{ name, value, color } in pieData"
-            :style="{
-              fontWeight: currentName === name ? 'bold' : 'normal',
-            }"
-          >
+          <li v-for="{ name, value, color } in pieData" :style="{
+            fontWeight: currentName === name ? 'bold' : 'normal',
+          }">
             <div class="left">
-              <span
-                class="color-box"
-                :style="{
-                  'background-color': color,
-                }"
-              ></span>
+              <span class="color-box" :style="{
+                'background-color': color,
+              }"></span>
               <span> {{ name }}</span>
             </div>
 
@@ -70,6 +57,20 @@ const echartsRef = ref();
 const totalTop = {
   title: `${props.title}资源分配率 Top5`,
   config: [
+    props.type === 'node' && {
+      tab: 'CPU',
+      key: 'cpu',
+      nameKey: 'instance',
+      data: [],
+      query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
+    },
+    props.type === 'node' && {
+      tab: '内存',
+      key: 'internal',
+      nameKey: 'instance',
+      data: [],
+      query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
+    },
     {
       tab: 'vGPU',
       key: 'vgpu',
@@ -91,12 +92,26 @@ const totalTop = {
       nameKey: props.type,
       query: `topk(5, sum(hami_container_vmemory_allocated{}) by (${props.type}) / sum(hami_memory_size{}) by (${props.type}) * 100)`,
     },
-  ],
+  ].filter(Boolean),
 };
 
 const usedTop = {
   title: `${props.title}资源使用率 Top5`,
   config: [
+    props.type === 'node' && {
+      tab: 'CPU',
+      key: 'cpu',
+      nameKey: 'instance',
+      data: [],
+      query: `topk(5, (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) * 100)`,
+    },
+    props.type === 'node' && {
+      tab: '内存',
+      key: 'internal',
+      nameKey: 'instance',
+      data: [],
+      query: `topk(5, ((sum(node_memory_MemTotal_bytes) by (instance)) - sum(node_memory_MemAvailable_bytes) by (instance)) / sum(node_memory_MemTotal_bytes) by (instance) * 100)`,
+    },
     {
       tab: '算力',
       key: 'core',
@@ -111,7 +126,7 @@ const usedTop = {
       nameKey: props.type,
       query: `topk(5, sum(hami_memory_used) by (${props.type}) / sum(hami_memory_size) by (${props.type}) * 100)`,
     },
-  ],
+  ].filter(Boolean),
 };
 
 const pieConfig = {
@@ -162,11 +177,13 @@ ul {
   padding: 0;
   list-style: none;
 }
+
 .preview {
   width: 100%;
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
+
   .preview-item {
     flex: 1;
   }
@@ -204,11 +221,13 @@ ul {
         justify-content: space-between;
         font-size: 12px;
         align-items: center;
+
         .left {
           display: flex;
           align-items: center;
           gap: 5px;
         }
+
         .color-box {
           width: 10px;
           height: 10px;
@@ -223,10 +242,12 @@ ul {
     flex-direction: column;
     min-height: 350px;
     height: 100%;
-    & > :nth-child(2) {
+
+    &> :nth-child(2) {
       flex: 1;
       max-height: 280px;
     }
+
     .node-top-echarts {
       //flex: 1;
     }

@@ -2,22 +2,22 @@
   <div>
     <back-header>
       节点管理 > {{ detail.name }}
-<!--      <template #extra>-->
-<!--        <el-form-item-->
-<!--          label="节点调度"-->
-<!--          style="margin-bottom: 0; margin-right: 20px"-->
-<!--        >-->
-<!--          <el-radio-group-->
-<!--            :disabled="detail.isExternal"-->
-<!--            v-model="tempSchedulable"-->
-<!--            size="small"-->
-<!--            @change="onChangeSchedulable"-->
-<!--          >-->
-<!--            <el-radio-button label="启用" :value="true" />-->
-<!--            <el-radio-button label="禁用" :value="false" />-->
-<!--          </el-radio-group>-->
-<!--        </el-form-item>-->
-<!--      </template>-->
+      <!--      <template #extra>-->
+      <!--        <el-form-item-->
+      <!--          label="节点调度"-->
+      <!--          style="margin-bottom: 0; margin-right: 20px"-->
+      <!--        >-->
+      <!--          <el-radio-group-->
+      <!--            :disabled="detail.isExternal"-->
+      <!--            v-model="tempSchedulable"-->
+      <!--            size="small"-->
+      <!--            @change="onChangeSchedulable"-->
+      <!--          >-->
+      <!--            <el-radio-button label="启用" :value="true" />-->
+      <!--            <el-radio-button label="禁用" :value="false" />-->
+      <!--          </el-radio-group>-->
+      <!--        </el-form-item>-->
+      <!--      </template>-->
     </back-header>
 
     <block-box class="node-block">
@@ -39,11 +39,21 @@
 
     <block-box>
       <ul class="card-gauges">
-        <li v-for="(item, index) in gaugeConfig" :key="index">
-          <template v-if="!detail.isExternal || index >= 2">
+        <li v-for="(item, index) in gaugeConfig.slice(0, 4)" :key="index">
+          <template v-if="!detail.isExternal || item.title.includes('使用率')">
             <Gauge v-bind="item" />
           </template>
-          <template v-else-if="detail.isExternal && index < 2">
+          <template v-else-if="detail.isExternal && item.title.includes('分配率')">
+            <el-empty description="暂无资源分配数据" :image-size="90" />
+          </template>
+        </li>
+      </ul>
+      <ul class="card-gauges" style="margin-top: 20px;">
+        <li v-for="(item, index) in gaugeConfig.slice(4, 7)" :key="index">
+          <template v-if="!detail.isExternal || item.title.includes('使用率')">
+            <Gauge v-bind="item" />
+          </template>
+          <template v-else-if="detail.isExternal && item.title.includes('分配率')">
             <el-empty description="暂无资源分配数据" :image-size="90" />
           </template>
         </li>
@@ -56,14 +66,13 @@
           <time-picker v-model="times" type="datetimerange" size="small" />
         </template>
         <div style="height: 200px">
-          <echarts-plus
-              :options="
-              getRangeOptions({
-                core: gaugeConfig[0].data,
-                memory: gaugeConfig[1].data,
-              })
-            "
-          />
+          <echarts-plus :options="getRangeOptions({
+            cpu: gaugeConfig[7].data,
+            internal: gaugeConfig[8].data,
+            core: gaugeConfig[4].data,
+            memory: gaugeConfig[5].data,
+          })
+            " />
         </div>
       </block-box>
       <block-box title="资源使用趋势（%）">
@@ -71,14 +80,13 @@
           <time-picker v-model="times" type="datetimerange" size="small" />
         </template>
         <div style="height: 200px">
-          <echarts-plus
-            :options="
-              getRangeOptions({
-                core: gaugeConfig[2].data,
-                memory: gaugeConfig[3].data,
-              })
-            "
-          />
+          <echarts-plus :options="getRangeOptions({
+            cpu: gaugeConfig[0].data,
+            internal: gaugeConfig[1].data,
+            core: gaugeConfig[6].data,
+            memory: gaugeConfig[3].data,
+          })
+            " />
         </div>
       </block-box>
     </div>
@@ -103,7 +111,7 @@
 import BackHeader from '@/components/BackHeader.vue';
 import { useRoute, useRouter } from 'vue-router';
 import BlockBox from '@/components/BlockBox.vue';
-import {computed, onMounted, ref, watch} from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Tools } from '@element-plus/icons-vue';
 import CardList from '~/vgpu/views/card/admin/index.vue';
 import TaskList from '~/vgpu/views/task/admin/index.vue';
@@ -116,10 +124,12 @@ import { getLineOptions } from '~/vgpu/views/monitor/overview/getOptions';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import api from '~/vgpu/api/task';
 import { getRangeOptions } from './getOptions';
-import {getDaysInRange} from "@/utils";
+import { bytesToGB } from "@/utils";
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+const { sendRouteChange } = useParentAction();
 
 const route = useRoute();
-const router = useRouter();
 
 const detail = ref({});
 
@@ -156,6 +166,46 @@ const cp = useInstantVector(
 const gaugeConfig = useInstantVector(
   [
     {
+      title: 'CPU 使用率',
+      percent: 0,
+      query: `count(node_cpu_seconds_total{mode="idle", instance=~"$node"}) by (instance)*(1 - avg(rate(node_cpu_seconds_total{mode="idle", instance=~"$node"}[5m])) by (instance))`,
+      totalQuery: `count(node_cpu_seconds_total{mode="idle", instance=~"$node"}) by (instance)`,
+      percentQuery: `100 * (1 - avg by(instance)(irate(node_cpu_seconds_total{mode="idle", instance=~"$node"}[1m])))`,
+      total: 0,
+      used: 0,
+      unit: '核',
+    },
+    {
+      title: '内存 使用率',
+      percent: 0,
+      query: `avg(node_memory_MemTotal_bytes{instance=~"$node"} - node_memory_MemAvailable_bytes{instance=~"$node"}) by (instance) / 1024 / 1024 / 1024`,
+      totalQuery: `avg(node_memory_MemTotal_bytes{instance=~"$node"}) by (instance) / 1024 / 1024 / 1024`,
+      percentQuery: `100 * (1 - node_memory_MemAvailable_bytes{instance=~"$node"} / node_memory_MemTotal_bytes{instance=~"$node"})`,
+      total: 0,
+      used: 0,
+      unit: 'GiB',
+    },
+    {
+      title: '磁盘 使用率',
+      percent: 0,
+      query: `sum(node_filesystem_size_bytes{instance=~"$node", fstype=~"ext4|xfs", mountpoint!~"/var/lib/kubelet/pods.*"} - node_filesystem_free_bytes{instance=~"$node", fstype=~"ext4|xfs", mountpoint!~"/var/lib/kubelet/pods.*"}) by (instance) / 1024 / 1024 / 1024`,
+      totalQuery: `sum(node_filesystem_size_bytes{instance=~"$node", fstype=~"ext4|xfs", mountpoint!~"/var/lib/kubelet/pods.*"}) by (instance) / 1024 / 1024 / 1024`,
+      percentQuery: ``,
+      total: 0,
+      used: 0,
+      unit: 'GiB',
+    },
+    {
+      title: '显存使用率',
+      percent: 0,
+      query: `avg(sum(hami_memory_used{node=~"$node"}) by (instance)) / 1024`,
+      totalQuery: `avg(sum(hami_memory_size{node=~"$node"}) by (instance))/1024`,
+      percentQuery: `(avg(sum(hami_memory_used{node=~"$node"}) by (instance)) / 1024)/(avg(sum(hami_memory_size{node=~"$node"}) by (instance))/1024)*100`,
+      total: 0,
+      used: 0,
+      unit: 'GiB',
+    },
+    {
       title: '算力分配率',
       percent: 0,
       query: `avg(sum(hami_container_vcore_allocated{node=~"$node"}) by (instance))`,
@@ -186,11 +236,21 @@ const gaugeConfig = useInstantVector(
       unit: ' ',
     },
     {
-      title: '显存使用率',
+      title: 'CPU 分配率',
       percent: 0,
-      query: `avg(sum(hami_memory_used{node=~"$node"}) by (instance)) / 1024`,
-      totalQuery: `avg(sum(hami_memory_size{node=~"$node"}) by (instance))/1024`,
-      percentQuery: `(avg(sum(hami_memory_used{node=~"$node"}) by (instance)) / 1024)/(avg(sum(hami_memory_size{node=~"$node"}) by (instance))/1024)*100`,
+      query: ``,
+      totalQuery: ``,
+      percentQuery: `avg(sum(hami_container_vcore_allocated{node=~"$node"}) by (instance) / sum(hami_core_size{node=~"$node"}) by (instance) * 100)`,
+      total: 0,
+      used: 0,
+      unit: '核',
+    },
+    {
+      title: '内存 分配率',
+      percent: 0,
+      query: ``,
+      totalQuery: ``,
+      percentQuery: `avg(sum(hami_container_memory_allocated{node=~"$node"}) by (instance) / sum(hami_memory_size{node=~"$node"}) by (instance) * 100)`,
       total: 0,
       used: 0,
       unit: 'GiB',
@@ -207,9 +267,9 @@ const detailColumns = [
     render: ({ isSchedulable, isExternal }) => {
       if (detail.value && detail.value.isSchedulable !== undefined) {
         return (
-            <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>
-              {isExternal ? '未纳管' : (isSchedulable ? '可调度' : '禁止调度')}
-            </el-tag>
+          <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>
+            {isExternal ? '未纳管' : (isSchedulable ? '可调度' : '禁止调度')}
+          </el-tag>
         );
       } else {
         return <el-tag disable-transitions size="small" type="info">加载中...</el-tag>;
@@ -230,81 +290,81 @@ const detailColumns = [
     label: '操作系统类型',
     value: 'operatingSystem',
     render: ({ operatingSystem }) => (
-        <span>
-          {operatingSystem==='' ? '--' : operatingSystem}
-        </span>
+      <span>
+        {operatingSystem === '' ? '--' : operatingSystem}
+      </span>
     ),
   },
   {
     label: '系统架构',
     value: 'architecture',
     render: ({ architecture }) => (
-        <span>
-          {architecture==='' ? '--' : architecture}
-        </span>
+      <span>
+        {architecture === '' ? '--' : architecture}
+      </span>
     ),
   },
   {
     label: 'kubelet 版本',
     value: 'kubeletVersion',
     render: ({ kubeletVersion }) => (
-        <span>
-          {kubeletVersion==='' ? '--' : kubeletVersion}
-        </span>
+      <span>
+        {kubeletVersion === '' ? '--' : kubeletVersion}
+      </span>
     ),
   },
   {
     label: '操作系统版本',
     value: 'osImage',
     render: ({ osImage }) => (
-        <span>
-          {osImage==='' ? '--' : osImage}
-        </span>
+      <span>
+        {osImage === '' ? '--' : osImage}
+      </span>
     ),
   },
   {
     label: '内核版本',
     value: 'kernelVersion',
     render: ({ kernelVersion }) => (
-        <span>
-          {kernelVersion==='' ? '--' : kernelVersion}
-        </span>
+      <span>
+        {kernelVersion === '' ? '--' : kernelVersion}
+      </span>
     ),
   },
   {
     label: 'kube-proxy 版本',
     value: 'kubeProxyVersion',
     render: ({ kubeProxyVersion }) => (
-        <span>
-          {kubeProxyVersion==='' ? '--' : kubeProxyVersion}
-        </span>
+      <span>
+        {kubeProxyVersion === '' ? '--' : kubeProxyVersion}
+      </span>
     ),
   },
   {
     label: '容器运行时',
     value: 'containerRuntimeVersion',
     render: ({ containerRuntimeVersion }) => (
-        <span>
-          {containerRuntimeVersion==='' ? '--' : containerRuntimeVersion}
-        </span>
+      <span>
+        {containerRuntimeVersion === '' ? '--' : containerRuntimeVersion}
+      </span>
     ),
   },
   {
     label: '显卡数量',
     value: 'cardCnt',
     render: ({ cardCnt }) => (
-        <span>
-          {cardCnt==='' ? '--' : cardCnt}
-        </span>
+      <span>
+        {cardCnt === '' ? '--' : cardCnt}
+      </span>
     ),
   },
   {
     label: '创建时间',
     value: 'creationTimestamp',
     render: ({ creationTimestamp }) => (
-        <span>
-          {creationTimestamp==='' ? '--' : creationTimestamp}
-        </span>
+      <span>
+        {creationTimestamp === '' ? '--' : creationTimestamp}
+      </span>
     ),
   },
 ];
@@ -373,6 +433,7 @@ onMounted(async () => {
     //line-height: 20px;
     margin-bottom: 20px;
   }
+
   //.node-detail-left {
   //  min-width: 800px;
   //}
@@ -405,6 +466,7 @@ onMounted(async () => {
   .gauges {
     flex: 1;
     display: flex;
+
     li {
       flex: 1;
     }
@@ -417,8 +479,9 @@ onMounted(async () => {
   list-style: none;
   display: flex;
   height: 200px;
+
   li {
-    flex: 1;
+    flex: 0.25;
   }
 }
 
@@ -431,6 +494,7 @@ onMounted(async () => {
 .node-block {
   display: flex;
   flex-direction: column;
+
   .home-block-content {
     flex: 1;
   }

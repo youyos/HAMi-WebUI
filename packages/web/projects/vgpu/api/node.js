@@ -2,7 +2,6 @@ import request from '@/utils/request';
 
 const apiPrefix = '/api/vgpu';
 
-
 class nodeApi {
   getNodeList(data) {
     return {
@@ -42,6 +41,13 @@ class nodeApi {
   joinNodes(data) {
     return request({
       url: apiPrefix + '/v1/node/join',
+      method: 'POST',
+      data,
+    });
+  }
+  stop(data) {
+    return request({
+      url: apiPrefix + '/v1/node/status/update',
       method: 'POST',
       data,
     });

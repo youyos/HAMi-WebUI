@@ -21,7 +21,7 @@
           </div>
         </div>
         <div class="right">
-          <el-button type="text">查看详情</el-button>
+          <el-button @click="sendRouteChange(`/admin/vgpu/poll/admin/${poolId}`)" type="text">查看详情</el-button>
           <template v-if="index === 0 && currentPage === 1">
             <el-button type="text">配置</el-button>
           </template>
@@ -103,6 +103,9 @@ import BlockBox from '@/components/BlockBox.vue';
 import { Remove } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { bytesToGB } from '@/utils';
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+const { sendRouteChange } = useParentAction();
 
 // 数据列表相关
 const list = ref([])

@@ -27,6 +27,11 @@ export default (Layout) => ({
           meta: { title: '资源池管理', icon: 'vgpu-pool-tab', noCache: true },
         },
         {
+          path: '/admin/vgpu/poll/admin/:uid',
+          component: () => import('~/vgpu/views/poll/admin/Detail.vue'),
+          name: 'poll-admin-detail',
+        },
+        {
           path: '/admin/vgpu/node/admin',
           component: () => import('~/vgpu/views/node/admin/index.vue'),
           name: 'node-admin',
