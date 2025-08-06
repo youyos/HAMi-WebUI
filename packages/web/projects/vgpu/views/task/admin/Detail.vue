@@ -58,7 +58,7 @@
 
 <script setup lang="jsx">
 import BackHeader from '@/components/BackHeader.vue';
-import {useRoute, useRouter} from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref, watch, watchEffect } from 'vue';
 
 import useInstantVector from '~/vgpu/hooks/useInstantVector';
@@ -117,16 +117,16 @@ const columns = [
           ></div>{' '}
           {text}
           {(status === 'unknown' || status === 'failed') && (
-              <ElPopover placement="top" trigger="hover" popper-style={{ width: '180px' }}>
-                {{
-                  reference: () => <el-icon color="#939EA9" size="14"><QuestionFilled /></el-icon>,
-                  default: () => (
-                      <span style={{ marginLeft: '5px', }}>
-                      请跳转云平台查看详情
-                    </span>
-                  ),
-                }}
-              </ElPopover>
+            <ElPopover placement="top" trigger="hover" popper-style={{ width: '180px' }}>
+              {{
+                reference: () => <el-icon color="#939EA9" size="14"><QuestionFilled /></el-icon>,
+                default: () => (
+                  <span style={{ marginLeft: '5px', }}>
+                    请跳转云平台查看详情
+                  </span>
+                ),
+              }}
+            </ElPopover>
           )}
         </div>
       );
@@ -146,11 +146,11 @@ const columns = [
       const displayText = isLongText ? `${text.slice(0, maxLength)}...` : text;
 
       return isLongText ? (
-          <el-tooltip content={text} placement="top">
-            <span>{displayText}</span>
-          </el-tooltip>
-      ) : (
+        <el-tooltip content={text} placement="top">
           <span>{displayText}</span>
+        </el-tooltip>
+      ) : (
+        <span>{displayText}</span>
       );
     },
   },
@@ -236,6 +236,16 @@ const lineConfig = ref([
     query: `avg(sum(hami_container_memory_util{container_name=~"$container",pod_name=~"$pod",namespace_name="$namespace"}) by (instance))`,
     data: [],
   },
+  {
+    title: 'CPU使用趋势（%）',
+    query: `100 * (1 - avg by(instance)(irate(node_cpu_seconds_total{mode="idle", instance=~"$node"}[1m])))`,
+    data: [],
+  },
+  {
+    title: '内存使用趋势（%）',
+    query: `100 * (1 - node_memory_MemAvailable_bytes{instance=~"$node"} / node_memory_MemTotal_bytes{instance=~"$node"})`,
+    data: [],
+  },
 ]);
 
 const fetchLineData = async () => {
@@ -251,7 +261,8 @@ const fetchLineData = async () => {
         query: item.query
           .replaceAll(`$container`, detail.value.name)
           .replaceAll(`$namespace`, detail.value.namespace)
-          .replaceAll(`$pod`, detail.value.appName),
+          .replaceAll(`$pod`, detail.value.appName)
+          .replaceAll(`$node`, detail.value.nodeName),
       })
       .then((res) => {
         lineConfig.value[index].data = res.data[0]?.values || [];
@@ -270,7 +281,7 @@ watch(times, () => {
 onMounted(async () => {
   const { name, podUid } = route.query;
   detail.value = await taskApi.getTaskDetail({ name, podUid });
-  const cards = await cardApi.getCardListReq({filters: {}});
+  const cards = await cardApi.getCardListReq({ filters: {} });
   const foundCard = cards.list.find((item) => item.uuid === detail.value.deviceIds[0]);
   if (foundCard) {
     detail.value.type = foundCard.type;
@@ -305,6 +316,7 @@ onMounted(async () => {
 .task-detail {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+
   .right {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

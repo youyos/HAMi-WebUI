@@ -70,6 +70,22 @@ const topConfig = [
     key: 'apply',
     config: [
       {
+        tab: 'CPU',
+        key: 'cpu',
+        data: [],
+        nameKey: 'container_pod_uuid',
+        unit: '核',
+        query: 'topk(5, sum by(container_pod_uuid) (hami_container_vcore_allocated))',
+      },
+      {
+        tab: '内存',
+        key: 'internal',
+        data: [],
+        unit: 'GiB',
+        nameKey: 'container_pod_uuid',
+        query: 'topk(5, sum by(container_pod_uuid) (hami_container_vmemory_allocated))',
+      },
+      {
         tab: '算力',
         key: 'core',
         data: [],
@@ -103,6 +119,7 @@ const topConfig = [
 .task-top-box {
   display: flex;
   gap: 25px;
+
   .item {
     flex: 1;
   }

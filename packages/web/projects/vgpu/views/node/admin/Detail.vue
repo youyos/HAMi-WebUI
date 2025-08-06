@@ -341,6 +341,33 @@ const detailColumns = [
     ),
   },
   {
+    label: 'CPU大小',
+    value: 'coreTotal',
+    render: ({ coreTotal }) => (
+      <span>
+        {`${coreTotal}核`}
+      </span>
+    ),
+  },
+  {
+    label: '内存大小',
+    value: 'memoryTotal',
+    render: ({ memoryTotal }) => (
+      <span>
+        {`${bytesToGB(memoryTotal)}GiB`}
+      </span>
+    ),
+  },
+  {
+    label: '磁盘大小',
+    value: 'diskSize',
+    render: ({ diskSize }) => (
+      <span>
+        {`${bytesToGB(diskSize)}GiB`}
+      </span>
+    ),
+  },
+  {
     label: '容器运行时',
     value: 'containerRuntimeVersion',
     render: ({ containerRuntimeVersion }) => (
