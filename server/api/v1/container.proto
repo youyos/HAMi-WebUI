@@ -61,7 +61,7 @@ message ContainerReply {
   string end_time = 11;
   string pod_uid = 12;
   string node_uid = 13;
-  repeated string resource_pool = 14;
+  repeated string resource_pools = 14;
   string flavor = 15;
   string priority = 16;
   string namespace = 17;

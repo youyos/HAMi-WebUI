@@ -97,7 +97,7 @@ func (s *ContainerService) GetAllContainers(ctx context.Context, req *pb.GetAllC
 			return nil, err
 		}
 
-		containerReply.ResourcePool = resourcePoolNames
+		containerReply.ResourcePools = resourcePoolNames
 		resourcePoolName, err := database.Get("big_model_resource_pool_name")
 		if err != nil {
 			return nil, err
