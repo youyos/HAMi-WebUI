@@ -571,3 +571,17 @@ export const clearEdges = (items) =>
 export const bytesToGB = (bytes) => {
   return Math.round(bytes / (1024 * 1024 * 1024));
 }
+
+export function parseUrl(url) {
+  const [pathname, queryString] = url.split('?');
+  const query = {};
+
+  if (queryString) {
+    queryString.split('&').forEach(pair => {
+      const [key, value] = pair.split('=');
+      query[decodeURIComponent(key)] = decodeURIComponent(value || '');
+    });
+  }
+
+  return { pathname, query };
+}

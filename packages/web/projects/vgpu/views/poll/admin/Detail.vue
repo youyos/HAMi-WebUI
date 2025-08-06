@@ -393,7 +393,7 @@ const gaugeConfig = useInstantVector(
       percent: 0,
       query: ``,
       totalQuery: ``,
-      percentQuery: `avg(sum(hami_container_memory_allocated{node=~"$node"}) by (instance) / sum(hami_memory_size{node=~"$node"}) by (instance) * 100)`,
+      percentQuery: `avg(sum(hami_container_vmemory_allocated{node=~"$node"}) by (instance) / sum(hami_memory_size{node=~"$node"}) by (instance) * 100)`,
       total: 0,
       used: 0,
       unit: 'GiB',

@@ -416,18 +416,18 @@ const nodeTotalTop = {
   key: 'used',
   config: [
     {
-      tab: 'GPU',
-      key: 'gpu',
-      nameKey: 'node',
+      tab: 'CPU',
+      key: 'cpu',
+      nameKey: 'instance',
       data: [],
-      query: `topk(5, avg(hami_container_vgpu_allocated{}) by (node) / avg(hami_vgpu_count{}) by (node) * 100)`,
+      query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
     },
     {
       tab: '内存',
       key: 'internal',
-      nameKey: 'node',
+      nameKey: 'instance',
       data: [],
-      query: `topk(5, avg(hami_container_vgpu_allocated{}) by (node) / avg(hami_vgpu_count{}) by (node) * 100)`,
+      query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
     },
     {
       tab: 'vGPU',

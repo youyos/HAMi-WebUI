@@ -1,44 +1,31 @@
 <template>
-  <list-header
-    v-if="!hideTitle"
-    description="任务管理用于监控物理显卡的状态。它用于监控物理显卡的分配使用情况，以及查看物理显卡上运行的所有任务。"
-  />
+  <list-header v-if="!hideTitle" description="任务管理用于监控物理显卡的状态。它用于监控物理显卡的分配使用情况，以及查看物理显卡上运行的所有任务。" />
 
   <Top v-if="!hideTitle" />
 
-  <table-plus
-    :api="taskApi.getTaskList({ filters })"
-    :columns="columns"
-    :rowAction="rowAction"
-    :searchSchema="searchSchema"
-    ref="table"
-    :style="style"
-    hideTag
-    staticPage
-  >
+  <table-plus :api="taskApi.getTaskList({ filters })" :columns="columns" :rowAction="rowAction"
+    :searchSchema="searchSchema" ref="table" :style="{ height: 'auto', ...style }" hideTag staticPage>
   </table-plus>
 
-  <form-plus-drawer
-    v-model="state.visible"
-    v-model:form="state.formValues"
-    :schema="state.schema"
-    :title="state.title"
-    @ok="state.ok"
-  />
+  <form-plus-drawer v-model="state.visible" v-model:form="state.formValues" :schema="state.schema" :title="state.title"
+    @ok="state.ok" />
 </template>
 
 <script setup lang="jsx">
 import taskApi from '~/vgpu/api/task';
-import {calculateDuration, roundToDecimal, timeParse} from '@/utils';
+import { calculateDuration, roundToDecimal, timeParse } from '@/utils';
 import { QuestionFilled } from '@element-plus/icons-vue';
 import api from '~/vgpu/api/task';
-import {ElMessage, ElMessageBox, ElPopover} from 'element-plus';
+import { ElMessage, ElMessageBox, ElPopover } from 'element-plus';
 import { reactive, ref, defineProps } from 'vue';
 import editSchema from './editSchema';
 import { mapValues, isNumber, pick } from 'lodash';
 import { useRouter } from 'vue-router';
 import searchSchema from './searchSchema';
 import Top from './top.vue';
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+const { sendRouteChange, hasParentWindow } = useParentAction();
 
 const props = defineProps(['hideTitle', 'filters', 'style']);
 
@@ -51,16 +38,21 @@ const state = reactive({
   schema: {},
   formValues: {},
   title: '',
-  ok: () => {},
+  ok: () => { },
 });
 
 const columns = [
   {
     title: '任务名称',
     dataIndex: 'name',
-    render: ({ name,podUid }) => (
-        <text-plus text={name} to={`/admin/vgpu/task/admin/detail?name=${name}&podUid=${podUid}`} />
+    render: ({ name, podUid }) => (
+      <text-plus text={name} to={`/admin/vgpu/task/admin/detail?name=${name}&podUid=${podUid}`} />
     ),
+  },
+  {
+    title: '类型',
+    dataIndex: 'nataskTypeme',
+    render: ({ taskType }) => taskType === 'big_model' ? '大模型' : '实训',
   },
   {
     title: '任务状态',
@@ -95,20 +87,38 @@ const columns = [
           ></div>{' '}
           {text}
           {(status === 'unknown' || status === 'failed') && (
-              <ElPopover trigger="hover" popper-style={{ width: '180px' }}>
-                {{
-                  reference: () => <el-icon color="#939EA9" size="14"><QuestionFilled /></el-icon>,
-                  default: () => (
-                    <span style={{ marginLeft: '5px', }}>
-                      请跳转云平台查看详情
-                    </span>
-                  ),
-                }}
-              </ElPopover>
+            <ElPopover trigger="hover" popper-style={{ width: '180px' }}>
+              {{
+                reference: () => <el-icon color="#939EA9" size="14"><QuestionFilled /></el-icon>,
+                default: () => (
+                  <span style={{ marginLeft: '5px', }}>
+                    请跳转云平台查看详情
+                  </span>
+                ),
+              }}
+            </ElPopover>
           )}
         </div>
       );
     },
+  },
+  {
+    title: '实训名称',
+    dataIndex: 'shixunName',
+  },
+  {
+    title: '使用者角色',
+    dataIndex: 'nataskTypeme',
+    render: ({ taskType }) => taskType === 'big_model' ? '大模型' : '实训',
+  },
+  {
+    title: '用户名',
+    dataIndex: 'role',
+  },
+  {
+    title: '所属资源池',
+    dataIndex: 'resourcePools',
+    render: ({ resourcePools }) => `${resourcePools.join('、')}`,
   },
   {
     title: '所属节点',
@@ -166,10 +176,14 @@ const rowAction = [
   {
     title: '查看详情',
     onClick: (row) => {
-      router.push({
-        path: '/admin/vgpu/task/admin/detail',
-        query: pick(row, ['name', 'podUid']),
-      });
+      sendRouteChange(`/admin/vgpu/task/admin/detail?name=${row.name}&podUid=${row.podUid}`);
+    },
+  },
+  {
+    title: '查看实训',
+    hidden: (row) => !hasParentWindow || row.taskType === 'big_model',
+    onClick: (row) => {
+      sendRouteChange(`/admins/running_pods?pod_name=${row.podName}`, 'open');
     },
   },
 ];

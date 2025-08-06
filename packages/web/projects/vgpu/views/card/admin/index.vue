@@ -33,6 +33,9 @@ import searchSchema from '~/vgpu/views/card/admin/searchSchema';
 import PreviewBar from '~/vgpu/components/previewBar.vue';
 import { defineProps, ref, watch } from 'vue';
 import { roundToDecimal } from '@/utils';
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+const { sendRouteChange } = useParentAction();
 
 const props = defineProps(['hideTitle', 'filters']);
 
@@ -41,9 +44,7 @@ const router = useRouter();
 const tableRef = ref({});
 
 const handleClick = (params) => {
-  router.push({
-    path: `/admin/vgpu/card/admin/${params.data.name}`,
-  });
+  sendRouteChange(`/admin/vgpu/card/admin/${params.data.name}`);
 };
 
 const columns = [
@@ -75,6 +76,11 @@ const columns = [
   {
     title: '所属节点',
     dataIndex: 'nodeName',
+  },
+  {
+    title: '所属资源池',
+    dataIndex: 'resourcePools',
+    render: ({ resourcePools }) => `${resourcePools.join('、')}`,
   },
   {
     title: '显卡型号',
@@ -114,9 +120,7 @@ const rowAction = [
   {
     title: '查看详情',
     onClick: (row) => {
-      router.push({
-        path: `/admin/vgpu/card/admin/${row.uuid}`,
-      });
+      sendRouteChange(`/admin/vgpu/card/admin/${row.uuid}`);
     },
   },
 ];

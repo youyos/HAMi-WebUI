@@ -26,7 +26,7 @@
             <el-button type="text">配置</el-button>
           </template>
           <template v-else>
-            <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList; input = poolName"
+            <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList.map(e=>e.nodeIp); input = poolName"
               type="text">编辑</el-button>
             <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
           </template>

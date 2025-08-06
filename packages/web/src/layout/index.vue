@@ -11,6 +11,7 @@ import '@tabler/core/dist/css/tabler.min.css';
 import { AppMain, Sidebar, TopBar } from './components';
 import { useRouter } from 'vue-router'
 import useParentAction from '~/vgpu/hooks/useParentAction';
+import { parseUrl } from '@/utils';
 
 
 export default {
@@ -48,9 +49,13 @@ export default {
       try {
         const messageData = JSON.parse(event.data);
         if (messageData.type === "ChangeTheRoute") {
-          this.router.push({
-            path: messageData.data,
-          });
+          // const { pathname, query } = parseUrl(messageData.data)
+          // console.log(messageData.data, 'messageData.data')
+          // this.router.push({
+          //   path: pathname,
+          //   query
+          // });
+          this.router.replace(messageData.data)
         }
       } catch (e) { }
     },

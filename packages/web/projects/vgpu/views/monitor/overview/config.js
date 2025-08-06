@@ -106,7 +106,7 @@ export const rangeConfigInit = [
       },
       {
         name: 'CPU',
-        query: `sum(hami_container_cpu_allocated) / sum(hami_cpu_count) * 100`,
+        query: `sum(hami_container_vcore_allocated) / sum(hami_core_size) * 100`,
         data: [],
         type: 'line',
         areaStyle: {
@@ -140,7 +140,7 @@ export const rangeConfigInit = [
       },
       {
         name: '内存',
-        query: `sum(hami_container_memory_allocated) / sum(hami_memory_capacity) * 100`,
+        query: `sum(hami_container_vmemory_allocated) / sum(hami_memory_size) * 100`,
         data: [],
         type: 'line',
         areaStyle: {
@@ -245,7 +245,7 @@ export const rangeConfigInit = [
       },
       {
         name: 'CPU',
-        query: `sum(hami_container_cpu_allocated) / sum(hami_cpu_count) * 100`,
+        query: `100 * (1 - sum(irate(node_cpu_seconds_total{mode="idle"}[1m])) / count(node_cpu_seconds_total{mode="idle"}))`,
         data: [],
         type: 'line',
         areaStyle: {
@@ -279,7 +279,7 @@ export const rangeConfigInit = [
       },
       {
         name: '内存',
-        query: `sum(hami_container_memory_allocated) / sum(hami_memory_capacity) * 100`,
+        query: `(1 - sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes)) * 100`,
         data: [],
         type: 'line',
         areaStyle: {

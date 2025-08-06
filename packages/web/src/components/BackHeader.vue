@@ -11,11 +11,14 @@
 
 <script setup lang="jsx">
 import { useRouter } from 'vue-router';
+import useParentAction from '~/vgpu/hooks/useParentAction';
 
 const router = useRouter();
+const { sendRouteChange } = useParentAction();
+
 
 const goBack = () => {
-  router.go(-1);
+  sendRouteChange('', 'back')
 };
 </script>
 
