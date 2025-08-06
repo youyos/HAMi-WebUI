@@ -62,7 +62,8 @@ service ResourcePool {
 
   rpc GetDetail (ResourcePoolDetailRequest) returns (ResourcePoolDetailResponse) {
     option (google.api.http) = {
-      post: "/v1/resource/pool/detail"
+      post: "/v1/resource/pool/detail",
+      body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "资源池详情";
