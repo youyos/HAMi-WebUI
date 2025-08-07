@@ -50,11 +50,6 @@ export default {
         const messageData = JSON.parse(event.data);
         if (messageData.type === "ChangeTheRoute") {
           // const { pathname, query } = parseUrl(messageData.data)
-          // console.log(messageData.data, 'messageData.data')
-          // this.router.push({
-          //   path: pathname,
-          //   query
-          // });
           this.router.replace(messageData.data)
         }
       } catch (e) { }

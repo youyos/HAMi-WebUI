@@ -2,6 +2,9 @@ import { timeParse } from '@/utils';
 import { cloneDeep } from 'lodash';
 import nodeApi from '~/vgpu/api/node';
 import { ElMessage } from 'element-plus';
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+const { sendRouteChange } = useParentAction();
 
 export const getResourceStatus = (statusConfig) => {
   return {
@@ -278,7 +281,7 @@ export const handleChartClick = async (params, router) => {
 
   if (node) {
     const uuid = node.uid;
-    router.push(`/admin/vgpu/node/admin/${uuid}?nodeName=${name}`);
+    sendRouteChange(`/admin/vgpu/node/admin/${uuid}?nodeName=${name}`);
   } else {
     ElMessage.error('节点未找到');
   }

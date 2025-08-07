@@ -173,11 +173,6 @@ const columns = [
     render: ({ diskSize }) => `${bytesToGB(diskSize)}GiB`,
   },
   {
-    title: '所属资源池',
-    dataIndex: 'resourcePools',
-    render: ({ resourcePools }) => `${resourcePools.join('、')}`,
-  },
-  {
     title: '显卡数量',
     dataIndex: 'cardCnt',
   },
@@ -221,57 +216,23 @@ const rowAction = [
     },
   },
   {
-    title: '禁用',
-    hidden: (row) => !row.isSchedulable,
+    title: '移除',
     onClick: async (row) => {
-      ElMessageBox.confirm(`确认对该节点进行禁用操作？`, '操作确认', {
+      ElMessageBox.confirm(`确定要移除当前节点吗？`, '操作确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
       })
         .then(async () => {
           try {
-            await nodeApi.stop(
+            await pollApi.remove(
               {
-                nodeName: row.name,
-                status: 'DISABLED'
+                node_id: row.nodeId,
               }
             ).then(
               () => {
                 setTimeout(() => {
-                  ElMessage.success('节点禁用成功');
-                  table.value.fetchData();
-                }, 500);
-              }
-            )
-          } catch (error) {
-            ElMessage.error(error.message);
-          }
-        })
-        .catch(() => { });
-    },
-  },
-  {
-    title: '开启',
-    hidden: (row) => row.isSchedulable,
-    disabled: (row) => row.isExternal,
-    onClick: async (row) => {
-      ElMessageBox.confirm(`确认对该节点进行开启调度操作？`, '操作确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
-        .then(async () => {
-          try {
-            await nodeApi.stop(
-              {
-                nodeName: row.name,
-                status: 'ENABLE'
-              }
-            ).then(
-              () => {
-                setTimeout(() => {
-                  ElMessage.success('节点开启调度成功');
+                  ElMessage.success('节点移除成功');
                   table.value.fetchData();
                 }, 500);
               }
@@ -523,7 +484,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-
 .card-gauges {
   margin: 0;
   padding: 0;
