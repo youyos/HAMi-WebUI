@@ -41,7 +41,7 @@
                   'side-menus-item-children-item',
                   { 'is-active': route.path.includes(child.path) },
                 ]"
-                @click="router.push(child.path)"
+                @click="sendRouteChange(child.path)"
               >
                 <svg-icon :icon="child.meta?.icon" />
                 <span v-if="sideWidth >= 200"> {{ child.meta?.title }}</span>
@@ -62,6 +62,9 @@
 import { computed, onMounted, ref, nextTick, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import useParentAction from '~/vgpu/hooks/useParentAction';
+
+const { sendRouteChange } = useParentAction();
 
 const route = useRoute();
 const router = useRouter();

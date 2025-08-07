@@ -9,7 +9,9 @@ import TabTop from '~/vgpu/components/TabTop.vue';
 import { useRouter } from 'vue-router';
 import nodeApi from '~/vgpu/api/node';
 import { ElMessage } from 'element-plus';
+import useParentAction from '~/vgpu/hooks/useParentAction';
 
+const { sendRouteChange } = useParentAction();
 const router = useRouter();
 
 const handleChartClick = async (params) => {
@@ -20,23 +22,15 @@ const handleChartClick = async (params) => {
     const node = list.find(node => node.name === name);
     if (node) {
       const uuid = node.uid;
-      router.push(`/admin/vgpu/node/admin/${uuid}?nodeName=${name}`);
+      sendRouteChange(`/admin/vgpu/node/admin/${uuid}?nodeName=${name}`);
     } else {
       ElMessage.error('节点未找到');
     }
   } else if (activeTabKey === 'deviceuuid') {
-    router.push({
-      path: `/admin/vgpu/card/admin/${name}`,
-    });
+    sendRouteChange(`/admin/vgpu/card/admin/${name}`);
   } else {
     const [containerName, podUid] = name.split(':');
-    router.push({
-      path: '/admin/vgpu/task/admin/detail',
-      query: {
-        name: containerName,
-        podUid: podUid,
-      },
-    });
+    sendRouteChange(`/admin/vgpu/task/admin/detail?name=${containerName}&podUid=${podUid}`);
   }
 };
 

@@ -10,7 +10,9 @@
 <script setup>
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import useParentAction from '~/vgpu/hooks/useParentAction';
 
+const { sendRouteChange } = useParentAction();
 const router = useRouter();
 
 const props = defineProps({
@@ -32,7 +34,7 @@ const handleCopy = () => {
 
 const handleClick = () => {
   if (props.to) {
-    router.push(props.to);
+    sendRouteChange(props.to);
   }
 };
 </script>
