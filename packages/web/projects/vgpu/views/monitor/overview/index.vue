@@ -379,20 +379,20 @@ const nodeUsedTop = {
   title: '节点资源使用率 Top5',
   key: 'used',
   config: [
-    {
-      tab: 'CPU',
-      key: 'cpu',
-      nameKey: 'instance',
-      data: [],
-      query: 'topk(5, avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))',
-    },
-    {
-      tab: '内存',
-      key: 'internal',
-      nameKey: 'instance',
-      data: [],
-      query: 'topk(5, ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))',
-    },
+    // {
+    //   tab: 'CPU',
+    //   key: 'cpu',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: 'topk(5, avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))',
+    // },
+    // {
+    //   tab: '内存',
+    //   key: 'internal',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: 'topk(5, ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))',
+    // },
     {
       tab: '算力',
       key: 'core',
@@ -415,20 +415,20 @@ const nodeTotalTop = {
   title: '节点资源分配率 Top5',
   key: 'used',
   config: [
-    {
-      tab: 'CPU',
-      key: 'cpu',
-      nameKey: 'instance',
-      data: [],
-      query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
-    },
-    {
-      tab: '内存',
-      key: 'internal',
-      nameKey: 'instance',
-      data: [],
-      query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
-    },
+    // {
+    //   tab: 'CPU',
+    //   key: 'cpu',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
+    // },
+    // {
+    //   tab: '内存',
+    //   key: 'internal',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
+    // },
     {
       tab: 'vGPU',
       key: 'vgpu',
