@@ -10,15 +10,15 @@
     :shortcuts="type.includes('range') && shortcuts"
     class="date-picker"
     :disabled-date="disabledDate"
+    @visible-change="onVisibleChange"
     v-bind="$attrs"
   />
 </template>
 
 <script setup lang="jsx">
 import { computed, defineProps, defineEmits, ref } from 'vue';
-import { ElDatePicker } from 'element-plus';
 
-// props & emits
+// Props 和 Emits
 const props = defineProps({
   modelValue: {},
   type: { type: String, default: 'date' },
@@ -26,10 +26,16 @@ const props = defineProps({
 });
 const emits = defineEmits(['update:modelValue']);
 
-// picker ref
+// picker 引用 和 当前面板是否显示
 const pickerRef = ref();
+const visible = ref(false);
 
-// 双向绑定
+// 显示状态变化监听
+const onVisibleChange = (val) => {
+  visible.value = val;
+};
+
+// 双向绑定逻辑
 const value = computed({
   get() {
     return props.modelValue;
@@ -39,17 +45,21 @@ const value = computed({
   },
 });
 
-// 生成快捷选项的封装函数
+// 快捷时间生成函数
 function genShortcut(text, hoursAgo) {
   return {
     text,
     value: () => {
       const end = new Date();
       const start = new Date(end.getTime() - hoursAgo * 3600 * 1000);
-      // 延迟关闭弹窗，确保值更新后再关闭
+
+      // 只关闭当前打开的面板，避免影响其他 time-picker
       setTimeout(() => {
-        pickerRef.value?.handleClose?.();
+        if (visible.value) {
+          pickerRef.value?.handleClose?.();
+        }
       }, 0);
+
       return [start, end];
     },
   };
@@ -66,13 +76,13 @@ const shortcuts = [
   genShortcut('前 1 周', 168),
 ];
 
-// 禁止选择未来时间
+// 禁用未来时间
 const disabledDate = (time) => {
   return time.getTime() >= Date.now();
 };
 </script>
 
-<style>
+<style scoped>
 .date-picker {
   max-width: 450px;
 }
