@@ -70,7 +70,9 @@
           </div>
         </div>
       </div>
-      <div class="wrap-center"></div>
+      <div class="wrap-center">
+        <svg-icon icon="arrow" />
+      </div>
       <div class="wrap-right">
         <div style="margin-top: 12px;"
           v-for="{ nodeIp, cpuCores, gpuNum, gpuMemory, totalMemory, diskSize }, index in nodeList.filter(e => nodeSelect.includes(e.nodeIp))"
@@ -304,5 +306,8 @@ onMounted(async () => {
 .wrap-center {
   width: 60px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
