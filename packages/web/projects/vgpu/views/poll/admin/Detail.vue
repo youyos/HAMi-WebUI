@@ -10,22 +10,12 @@
     <block-box>
       <ul class="card-gauges">
         <li v-for="(item, index) in gaugeConfig.slice(0, 4)" :key="index">
-          <template v-if="!detail.isExternal || item.title.includes('使用率')">
-            <Gauge v-bind="item" />
-          </template>
-          <template v-else-if="detail.isExternal && item.title.includes('分配率')">
-            <el-empty description="暂无资源分配数据" :image-size="90" />
-          </template>
+          <Gauge v-bind="item" />
         </li>
       </ul>
       <ul class="card-gauges" style="margin-top: 20px;">
         <li v-for="(item, index) in gaugeConfig.slice(4, 7)" :key="index">
-          <template v-if="!detail.isExternal || item.title.includes('使用率')">
-            <Gauge v-bind="item" />
-          </template>
-          <template v-else-if="detail.isExternal && item.title.includes('分配率')">
-            <el-empty description="暂无资源分配数据" :image-size="90" />
-          </template>
+          <Gauge v-bind="item" />
         </li>
       </ul>
     </block-box>
@@ -66,34 +56,23 @@
     </block-box>
 
     <block-box title="任务列表">
-      <template v-if="detail.isExternal">
-        <el-alert title="由于节点未纳管，无法获取到任务数据" show-icon type="warning" :closable="false" />
-        <el-empty description="暂无任务数据" :image-size="100" />
-      </template>
-      <template v-else>
-        <TaskList :hideTitle="true" :filters="{ nodeUid: detail.uid }" />
-      </template>
+      <TaskList :hideTitle="true" :filters="{ nodeUid: detail.uid }" />
     </block-box>
   </div>
 </template>
 
 <script setup lang="jsx">
 import BackHeader from '@/components/BackHeader.vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import BlockBox from '@/components/BlockBox.vue';
-import { computed, onMounted, ref, watch } from 'vue';
-import { Tools } from '@element-plus/icons-vue';
+import { computed, onMounted, ref, watch, watchEffect } from 'vue';
 import CardList from '~/vgpu/views/card/admin/index.vue';
 import TaskList from '~/vgpu/views/task/admin/index.vue';
 import Gauge from '~/vgpu/components/gauge.vue';
 import useInstantVector from '~/vgpu/hooks/useInstantVector';
 import EchartsPlus from '@/components/Echarts-plus.vue';
-import TimeSelect from '~/vgpu/components/timeSelect.vue';
-import nodeApi from '~/vgpu/api/node';
 import pollApi from '~/vgpu/api/poll';
-import { getLineOptions } from '~/vgpu/views/monitor/overview/getOptions';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import api from '~/vgpu/api/task';
 import { getRangeOptions } from './getOptions';
 import { bytesToGB, roundToDecimal } from "@/utils";
 import useParentAction from '~/vgpu/hooks/useParentAction';
@@ -112,8 +91,6 @@ start.setTime(start.getTime() - 3600 * 1000);
 
 const times = ref([start, end]);
 
-const isSchedulable = ref(true);
-const tempSchedulable = ref(isSchedulable.value);
 
 const columns = [
   {
@@ -135,27 +112,10 @@ const columns = [
         {isExternal ? '未纳管' : (isSchedulable ? '可调度' : '禁止调度')}
       </el-tag>
     )
-    // filters: [
-    //   {
-    //     text: '可调度',
-    //     value: 'true',
-    //   },
-    //   {
-    //     text: '禁止调度',
-    //     value: 'false',
-    //   },
-    // ],
   },
   {
     title: '显卡型号',
     dataIndex: 'type',
-    // filters: (data) => {
-    //   const r = data.reduce((all, item) => {
-    //     return uniq([...all, ...item.type]);
-    //   }, []);
-    //
-    //   return r.map((item) => ({ text: item, value: item }));
-    // },
   },
   {
     title: 'CPU',
@@ -245,27 +205,6 @@ const rowAction = [
     },
   },
 ];
-
-const cp = useInstantVector(
-  [
-    {
-      label: 'vGPU 超配',
-      count: '0',
-      query: `avg(hami_vgpu_count{node=~"$node"})`,
-    },
-    {
-      label: '算力超配',
-      count: '0',
-      query: `avg(hami_vcore_scaling{node=~"$node"})`,
-    },
-    {
-      label: '显存超配',
-      count: '1.5',
-      query: `avg(hami_vmemory_scaling{node=~"$node"})`,
-    },
-  ],
-  (query) => query.replaceAll('$node', detail.value.name),
-);
 
 const gaugeConfig = useInstantVector(
   [
@@ -364,122 +303,7 @@ const gaugeConfig = useInstantVector(
   times,
 );
 
-const detailColumns = [
-  {
-    label: '节点状态',
-    value: 'status',
-    render: ({ isSchedulable, isExternal }) => {
-      if (detail.value && detail.value.isSchedulable !== undefined) {
-        return (
-          <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>
-            {isExternal ? '未纳管' : (isSchedulable ? '可调度' : '禁止调度')}
-          </el-tag>
-        );
-      } else {
-        return <el-tag disable-transitions size="small" type="info">加载中...</el-tag>;
-      }
-    },
-  },
-  {
-    label: '节点 IP 地址',
-    value: 'ip',
-    render: ({ ip }) => <text-plus text={ip} copy />,
-  },
-  {
-    label: '节点 UUID',
-    value: 'uid',
-    render: ({ uid }) => <text-plus text={uid} copy />,
-  },
-  {
-    label: '操作系统类型',
-    value: 'operatingSystem',
-    render: ({ operatingSystem }) => (
-      <span>
-        {operatingSystem === '' ? '--' : operatingSystem}
-      </span>
-    ),
-  },
-  {
-    label: '系统架构',
-    value: 'architecture',
-    render: ({ architecture }) => (
-      <span>
-        {architecture === '' ? '--' : architecture}
-      </span>
-    ),
-  },
-  {
-    label: 'kubelet 版本',
-    value: 'kubeletVersion',
-    render: ({ kubeletVersion }) => (
-      <span>
-        {kubeletVersion === '' ? '--' : kubeletVersion}
-      </span>
-    ),
-  },
-  {
-    label: '操作系统版本',
-    value: 'osImage',
-    render: ({ osImage }) => (
-      <span>
-        {osImage === '' ? '--' : osImage}
-      </span>
-    ),
-  },
-  {
-    label: '内核版本',
-    value: 'kernelVersion',
-    render: ({ kernelVersion }) => (
-      <span>
-        {kernelVersion === '' ? '--' : kernelVersion}
-      </span>
-    ),
-  },
-  {
-    label: 'kube-proxy 版本',
-    value: 'kubeProxyVersion',
-    render: ({ kubeProxyVersion }) => (
-      <span>
-        {kubeProxyVersion === '' ? '--' : kubeProxyVersion}
-      </span>
-    ),
-  },
-  {
-    label: '容器运行时',
-    value: 'containerRuntimeVersion',
-    render: ({ containerRuntimeVersion }) => (
-      <span>
-        {containerRuntimeVersion === '' ? '--' : containerRuntimeVersion}
-      </span>
-    ),
-  },
-  {
-    label: '显卡数量',
-    value: 'cardCnt',
-    render: ({ cardCnt }) => (
-      <span>
-        {cardCnt === '' ? '--' : cardCnt}
-      </span>
-    ),
-  },
-  {
-    label: '创建时间',
-    value: 'creationTimestamp',
-    render: ({ creationTimestamp }) => (
-      <span>
-        {creationTimestamp === '' ? '--' : creationTimestamp}
-      </span>
-    ),
-  },
-];
-
-const refresh = async () => {
-  detail.value = await nodeApi.getNodeDetail({ uid: route.params.uid });
-  isSchedulable.value = detail.value.isSchedulable;
-};
-
 onMounted(async () => {
-  // await refresh();
 });
 </script>
 

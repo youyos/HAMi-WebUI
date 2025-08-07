@@ -7,7 +7,7 @@
   </list-header>
   <div v-loading="loading" style="min-height: 90px;">
     <block-box
-      v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList }, index in paginatedList"
+      v-for="{ poolId, poolName, nodeNum, cpuCores, gpuNum, availableMemory, totalMemory, diskSize, nodeList, linkUrl }, index in paginatedList"
       :key="poolId" style="margin: 15px 0 0 0;">
       <el-row style="align-items: center;">
         <div class="left">
@@ -23,10 +23,11 @@
         <div class="right">
           <el-button @click="sendRouteChange(`/admin/vgpu/poll/admin/${poolId}`)" type="text">查看详情</el-button>
           <template v-if="index === 0 && currentPage === 1">
-            <el-button type="text">配置</el-button>
+            <el-button @click="sendRouteChange(linkUrl, 'open')" type="text">配置</el-button>
           </template>
           <template v-else>
-            <el-button @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList.map(e=>e.nodeIp); input = poolName"
+            <el-button
+              @click="dialogVisible = true; editId = poolId; nodeSelect = nodeList.map(e => e.nodeIp); input = poolName"
               type="text">编辑</el-button>
             <el-button @click="() => handleDelete(poolId)" type="text">删除</el-button>
           </template>
@@ -49,7 +50,7 @@
     <div style="margin-top: 20px; margin-bottom: 10px;">
       <span>选择节点</span>
       <span style="float: right;">已选<span style="color: #3061D0; margin: 0 5px;">{{ nodeSelect.length
-      }}</span>个节点</span>
+          }}</span>个节点</span>
     </div>
     <div class="wrap">
       <div class="wrap-left">
