@@ -7,6 +7,7 @@
     start-placeholder="开始时间"
     end-placeholder="结束时间"
     unlink-panels
+    :teleported="false"
     :shortcuts="type.includes('range') && shortcuts"
     class="date-picker"
     :disabled-date="disabledDate"
