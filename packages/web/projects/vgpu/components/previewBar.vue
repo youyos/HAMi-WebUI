@@ -57,20 +57,20 @@ const echartsRef = ref();
 const totalTop = {
   title: `${props.title}资源分配率 Top5`,
   config: [
-    props.type === 'node' && {
-      tab: 'CPU',
-      key: 'cpu',
-      nameKey: 'instance',
-      data: [],
-      query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
-    },
-    props.type === 'node' && {
-      tab: '内存',
-      key: 'internal',
-      nameKey: 'instance',
-      data: [],
-      query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
-    },
+    // props.type === 'node' && {
+    //   tab: 'CPU',
+    //   key: 'cpu',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
+    // },
+    // props.type === 'node' && {
+    //   tab: '内存',
+    //   key: 'internal',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
+    // },
     {
       tab: 'vGPU',
       key: 'vgpu',
