@@ -84,7 +84,8 @@ func (r *podRepo) onDeletedPod(obj interface{}) {
 		return
 	}
 	_, ok = pod.Annotations[util.AssignedNodeAnnotations]
-	if !ok {
+	tpiID := pod.Labels["tpi-id"]
+	if !ok && tpiID == "" {
 		return
 	}
 	r.delPod(pod)
