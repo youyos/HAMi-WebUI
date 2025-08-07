@@ -227,7 +227,7 @@ const resourceOverview = ref([
     count: 0,
     icon: 'vgpu-pool-tab',
     unit: '个',
-    to: '/admin/vgpu/resource/admin'
+    to: '/admin/vgpu/poll/admin'
   },
   {
     title: 'CPU',
