@@ -158,13 +158,13 @@ const columns = [
   },
   {
     title: 'CPU',
-    dataIndex: 'coreTotal',
-    render: ({ coreTotal }) => `${coreTotal}核`,
+    dataIndex: 'cpuCores',
+    render: ({ cpuCores }) => `${cpuCores}核`,
   },
   {
     title: '内存',
-    dataIndex: 'memoryTotal',
-    render: ({ memoryTotal }) => `${bytesToGB(memoryTotal)}GiB`,
+    dataIndex: 'totalMemory',
+    render: ({ totalMemory }) => `${bytesToGB(totalMemory)}GiB`,
   },
   {
     title: '磁盘',

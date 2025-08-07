@@ -44,7 +44,7 @@
 
       <Block v-for="{ title, dataSource } in rangeConfig" :title="title" :key="title">
         <template #extra>
-          <time-picker v-model="times" type="datetimerange" size="small" />
+          <time-picker v-model="times" type="datetimerange" size="small" :key="`time-picker-${title}`" />
         </template>
         <echarts-plus :options="getRangeOptions(dataSource)" style="height: 250px" />
       </Block>
