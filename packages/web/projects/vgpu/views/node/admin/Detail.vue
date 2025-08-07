@@ -342,19 +342,19 @@ const detailColumns = [
   },
   {
     label: 'CPU大小',
-    value: 'coreTotal',
-    render: ({ coreTotal }) => (
+    value: 'cpuCores',
+    render: ({ cpuCores }) => (
       <span>
-        {`${coreTotal}核`}
+        {`${cpuCores}核`}
       </span>
     ),
   },
   {
     label: '内存大小',
-    value: 'memoryTotal',
-    render: ({ memoryTotal }) => (
+    value: 'totalMemory',
+    render: ({ totalMemory }) => (
       <span>
-        {`${bytesToGB(memoryTotal)}GiB`}
+        {`${bytesToGB(totalMemory)}GiB`}
       </span>
     ),
   },
