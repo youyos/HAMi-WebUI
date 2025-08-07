@@ -115,9 +115,9 @@ message PoolNodeReply {
   int32 vgpu_used = 5;
   int32 vgpu_total = 6;
   int32 core_used = 7;
-  int64 core_total = 8;
-  int64 memory_used = 9;
-  int64 memory_total = 10;
+  int32 core_total = 8;
+  int32 memory_used = 9;
+  int32 memory_total = 10;
   string uid = 11;
   string name = 12;
   int32 card_cnt = 13;
@@ -131,6 +131,8 @@ message PoolNodeReply {
   string creation_timestamp = 21;
   int64 disk_size = 22;
   int64 node_id = 23;
+  int64 cpu_cores = 24;
+  int64 total_memory = 25;
 }
 
 message ResourcePoolDetailRequest {
