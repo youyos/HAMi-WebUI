@@ -1,6 +1,6 @@
 <template>
   <back-header>
-    资源池详情
+    资源池管理 > {{ route.query?.name || '' }}
   </back-header>
   <table-plus v-loading="loading" :dataSource="list" :columns="columns" :rowAction="rowAction" :hasPagination="false"
     style="margin-bottom: 15px; height: auto;" hideTag ref="table" static :hasActionBar="false">
@@ -139,6 +139,7 @@ const rowAction = [
   },
   {
     title: '移除',
+    hidden: () => list.value.length < 2,
     onClick: async (row) => {
       ElMessageBox.confirm(`确定要移除当前节点吗？`, '操作确认', {
         confirmButtonText: '确定',

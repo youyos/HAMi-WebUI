@@ -21,7 +21,8 @@
           </div>
         </div>
         <div class="right">
-          <el-button @click="sendRouteChange(`/admin/vgpu/poll/admin/${poolId}`)" type="text">查看详情</el-button>
+          <el-button @click="sendRouteChange(`/admin/vgpu/poll/admin/${poolId}?name=${poolName}`)"
+            type="text">查看详情</el-button>
           <template v-if="index === 0 && currentPage === 1">
             <el-button @click="sendRouteChange(linkUrl, 'open')" type="text">配置</el-button>
           </template>
@@ -50,7 +51,7 @@
     <div style="margin-top: 20px; margin-bottom: 10px;">
       <span>选择节点</span>
       <span style="float: right;">已选<span style="color: #3061D0; margin: 0 5px;">{{ nodeSelect.length
-          }}</span>个节点</span>
+      }}</span>个节点</span>
     </div>
     <div class="wrap">
       <div class="wrap-left">
