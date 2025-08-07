@@ -172,7 +172,7 @@ const columns = [
   {
     label: '分配内存',
     value: 'requestedMemory',
-    render: ({ requestedMemory }) => <span>{bytesToGB(requestedMemory)} 核</span>,
+    render: ({ requestedMemory }) => <span>{bytesToGB(requestedMemory)} GiB</span>,
 
   },
   {
