@@ -1,5 +1,6 @@
 <template>
   <el-date-picker
+    ref="pickerRef"
     v-model="value"
     :type="type"
     range-separator="至"
@@ -10,21 +11,25 @@
     class="date-picker"
     :disabled-date="disabledDate"
     v-bind="$attrs"
-  ></el-date-picker>
+  />
 </template>
 
 <script setup lang="jsx">
-import { computed, defineProps, defineEmits } from 'vue';
+import { computed, defineProps, defineEmits, ref } from 'vue';
 import { ElDatePicker } from 'element-plus';
 
+// props & emits
 const props = defineProps({
   modelValue: {},
   type: { type: String, default: 'date' },
   parse: { type: Function, default: (times) => times },
 });
-
 const emits = defineEmits(['update:modelValue']);
 
+// picker ref
+const pickerRef = ref();
+
+// 双向绑定
 const value = computed({
   get() {
     return props.modelValue;
@@ -34,99 +39,34 @@ const value = computed({
   },
 });
 
+// 生成快捷选项的封装函数
+function genShortcut(text, hoursAgo) {
+  return {
+    text,
+    value: () => {
+      const end = new Date();
+      const start = new Date(end.getTime() - hoursAgo * 3600 * 1000);
+      // 延迟关闭弹窗，确保值更新后再关闭
+      setTimeout(() => {
+        pickerRef.value?.handleClose?.();
+      }, 0);
+      return [start, end];
+    },
+  };
+}
+
+// 快捷选项列表
 const shortcuts = [
-  {
-    text: '前 1 小时',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 1);
-      return [start, end];
-    },
-  },
-  {
-    text: '前 6 小时',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 6);
-      return [start, end];
-    },
-  },
-  {
-    text: '前 12 小时',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 12);
-      return [start, end];
-    },
-  },
-  {
-    text: '前 1 天',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24);
-      return [start, end];
-    },
-  },
-  {
-    text: '前 2 天',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 2);
-      return [start, end];
-    },
-  },
-  {
-    text: '前 3 天',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 3);
-      return [start, end];
-    },
-  },
-  {
-    text: '前 1 周',
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-      return [start, end];
-    },
-  },
-  // {
-  //   text: '前两周',
-  //   value: () => {
-  //     const end = new Date();
-  //     const start = new Date();
-  //     start.setTime(start.getTime() - 3600 * 1000 * 24 * 14);
-  //     return [start, end];
-  //   },
-  // },
-  // {
-  //   text: '前一个月',
-  //   value: () => {
-  //     const end = new Date();
-  //     const start = new Date();
-  //     start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-  //     return [start, end];
-  //   },
-  // },
-  // {
-  //   text: '前三个月',
-  //   value: () => {
-  //     const end = new Date();
-  //     const start = new Date();
-  //     start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-  //     return [start, end];
-  //   },
-  // },
+  genShortcut('前 1 小时', 1),
+  genShortcut('前 6 小时', 6),
+  genShortcut('前 12 小时', 12),
+  genShortcut('前 1 天', 24),
+  genShortcut('前 2 天', 48),
+  genShortcut('前 3 天', 72),
+  genShortcut('前 1 周', 168),
 ];
 
+// 禁止选择未来时间
 const disabledDate = (time) => {
   return time.getTime() >= Date.now();
 };
