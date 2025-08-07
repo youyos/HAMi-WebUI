@@ -141,7 +141,7 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 		for _, n := range dbNodes {
 			node := k8sNodes[n.NodeName]
 			if node == nil {
-				return nil, errors.New("node not found: " + n.NodeName)
+				continue
 			}
 			poolData.CpuCores = poolData.CpuCores + node.CPUCores
 			poolData.GpuNum = poolData.GpuNum + node.GPUCount
