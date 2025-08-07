@@ -9,19 +9,21 @@ import (
 )
 
 type Container struct {
-	Name             string
-	UUID             string
-	ContainerIdx     int
-	NodeName         string
-	PodUID           string
-	PodName          string
-	ContainerDevices ContainerDevices
-	Status           string
-	CreateTime       time.Time
-	Priority         string
-	NodeUID          string
-	Namespace        string
-	TpiID            string
+	Name              string
+	UUID              string
+	ContainerIdx      int
+	NodeName          string
+	PodUID            string
+	PodName           string
+	ContainerDevices  ContainerDevices
+	Status            string
+	CreateTime        time.Time
+	Priority          string
+	NodeUID           string
+	Namespace         string
+	TpiID             string
+	RequestedCpuCores float32
+	RequestedMemory   int64
 }
 
 type PodInfo struct {

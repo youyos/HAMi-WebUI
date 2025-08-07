@@ -93,6 +93,7 @@ func (r *podRepo) addPod(pod *corev1.Pod, nodeID string, devices biz.PodDevices)
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	ctrs := r.fetchContainerInfo(pod)
+
 	pi := &biz.PodInfo{Name: pod.Name, UID: pod.UID, Namespace: pod.Namespace, NodeID: nodeID, Devices: devices, Ctrs: ctrs, Labels: pod.Labels}
 	r.pods[pod.UID] = pi
 	r.allPods = append(r.allPods, pi)
@@ -137,17 +138,19 @@ func (r *podRepo) fetchContainerInfo(pod *corev1.Pod) []*biz.Container {
 
 	for i, ctr := range pod.Spec.Containers {
 		c := &biz.Container{
-			Name:             ctr.Name,
-			UUID:             ctrIdMaps[ctr.Name],
-			ContainerIdx:     i,
-			NodeName:         pod.Spec.NodeName,
-			PodName:          pod.Name,
-			PodUID:           string(pod.UID),
-			Status:           containerStat[ctr.Name],
-			NodeUID:          r.GetNodeUUID(pod),
-			Namespace:        pod.Namespace,
-			CreateTime:       r.GetCreateTime(pod),
-			ContainerDevices: bizContainerDevices[i],
+			Name:              ctr.Name,
+			UUID:              ctrIdMaps[ctr.Name],
+			ContainerIdx:      i,
+			NodeName:          pod.Spec.NodeName,
+			PodName:           pod.Name,
+			PodUID:            string(pod.UID),
+			Status:            containerStat[ctr.Name],
+			NodeUID:           r.GetNodeUUID(pod),
+			Namespace:         pod.Namespace,
+			CreateTime:        r.GetCreateTime(pod),
+			ContainerDevices:  bizContainerDevices[i],
+			RequestedCpuCores: float32(ctr.Resources.Requests.Cpu().MilliValue()) / 1000,
+			RequestedMemory:   ctr.Resources.Requests.Memory().Value(),
 		}
 		if len(bizContainerDevices[i]) > 0 {
 			c.Priority = bizContainerDevices[i][0].Priority

@@ -151,6 +151,7 @@ message ResourcePoolListData{
   int64 total_memory = 7; // kb
   int64 disk_size = 8;
   repeated Nodes node_list = 9;
+  string link_url = 10;
 }
 
 message ResourcePoolListRequest {

@@ -18,3 +18,4 @@ database:
   dataSourceName: testeducoder:TEST@123@tcp(testeducoder-public.mysql.polardb.rds.aliyuncs.com:3306)/hami?parseTime=true&loc=Local
 web_domain: http://172.16.100.14
 big_model_resource_pool_name: "大模型资源池"
+big_model_resource_pool_link_url: "https://www.baidu.com"
