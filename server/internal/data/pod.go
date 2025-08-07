@@ -59,7 +59,8 @@ func (r *podRepo) onAddPod(obj interface{}) {
 		return
 	}
 	nodeID, ok := pod.Annotations[util.AssignedNodeAnnotations]
-	if !ok {
+	tpiID := pod.Labels["tpi-id"]
+	if !ok && tpiID == "" {
 		return
 	}
 	if biz.IsPodInTerminatedState(pod) {
@@ -121,7 +122,10 @@ func (r *podRepo) fetchContainerInfo(pod *corev1.Pod) []*biz.Container {
 		copier.Copy(&bizContainerDevices, pds)
 	}
 	if len(bizContainerDevices) < 1 {
-		return containers
+		for range pod.Spec.Containers {
+			bizContainerDevices = append(bizContainerDevices, biz.ContainerDevices{})
+		}
+		//return containers
 	}
 
 	ctrIdMaps := map[string]string{}
