@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
@@ -176,8 +175,6 @@ func (s *ResourcePoolService) GetDetail(ctx context.Context, req *pb.ResourcePoo
 	nodes, err := s.uc.ListAllNodesV2(ctx)
 
 	for _, poolNode := range poolNodes {
-		b1, _ := json.MarshalIndent(poolNode, "", "  ")
-		log.Info(string(b1))
 		node := s.filterNode(poolNode.NodeIp, nodes)
 		if node == nil {
 			continue
@@ -253,8 +250,6 @@ func (s *ResourcePoolService) simpleQuery(ctx context.Context, query string) int
 
 func (s *ResourcePoolService) filterNode(nodeIp string, nodes []*biz.Node) *biz.Node {
 	for _, node := range nodes {
-		b, _ := json.MarshalIndent(node, "", "  ")
-		log.Info(string(b))
 		if node.IP == nodeIp {
 			return node
 		}
@@ -278,21 +273,21 @@ func (s *ResourcePoolService) buildNodeReply(ctx context.Context, node *biz.Node
 		KubeProxyVersion:        node.KubeProxyVersion,
 		Architecture:            node.Architecture,
 		CreationTimestamp:       node.CreationTimestamp,
-		CoreTotal:               node.CPUCores,
-		MemoryTotal:             node.TotalMemory,
+		CpuCores:                node.CPUCores,
+		TotalMemory:             node.TotalMemory,
 		DiskSize:                node.DiskTotal,
 	}
 
 	for _, device := range node.Devices {
 		nodeReply.Type = append(nodeReply.Type, device.Type)
 		nodeReply.VgpuTotal += device.Count
-		nodeReply.CoreTotal += int64(device.Devcore)
-		nodeReply.MemoryTotal += int64(device.Devmem)
+		nodeReply.CoreTotal += device.Devcore
+		nodeReply.MemoryTotal += device.Devmem
 		vGPU, core, memory, err := s.pod.StatisticsByDeviceId(ctx, device.AliasId)
 		if err == nil {
 			nodeReply.VgpuUsed += vGPU
 			nodeReply.CoreUsed += core
-			nodeReply.MemoryUsed += int64(memory)
+			nodeReply.MemoryUsed += memory
 		}
 	}
 

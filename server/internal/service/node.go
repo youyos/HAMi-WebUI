@@ -150,16 +150,16 @@ func (s *NodeService) buildNodeReply(ctx context.Context, node *biz.Node) (*pb.N
 		KubeProxyVersion:        node.KubeProxyVersion,
 		Architecture:            node.Architecture,
 		CreationTimestamp:       node.CreationTimestamp,
-		CoreTotal:               node.CPUCores,
-		MemoryTotal:             node.TotalMemory,
 		DiskSize:                node.DiskTotal,
+		CpuCores:                node.CPUCores,
+		TotalMemory:             node.TotalMemory,
 	}
 
 	for _, device := range node.Devices {
 		nodeReply.Type = append(nodeReply.Type, device.Type)
 		nodeReply.VgpuTotal += device.Count
-		nodeReply.CoreTotal += int64(device.Devcore)
-		nodeReply.MemoryTotal += int64(device.Devmem)
+		nodeReply.CoreTotal += device.Devcore
+		nodeReply.MemoryTotal += device.Devmem
 		vGPU, core, memory, err := s.pod.StatisticsByDeviceId(ctx, device.AliasId)
 		if err == nil {
 			nodeReply.VgpuUsed += vGPU
