@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/go-kratos/kratos/v2/log"
+	"slices"
 	"sort"
 	"strings"
 	pb "vgpu/api/v1"
@@ -31,17 +33,43 @@ func (s *CardService) GetAllGPUs(ctx context.Context, req *pb.GetAllGpusReq) (*p
 	var res = &pb.GPUsReply{List: []*pb.GPUReply{}}
 	for _, device := range deviceInfos {
 		gpu := &pb.GPUReply{}
-		nodeName := strings.Trim(filters.NodeName, " ")
-		if nodeName != "" && nodeName != device.NodeName {
-			continue
+		//nodeName := strings.Trim(filters.NodeName, " ")
+		//if nodeName != "" && nodeName != device.NodeName {
+		//	continue
+		//}
+		//deviceType := strings.Trim(filters.Type, " ")
+		//if deviceType != "" && deviceType != device.Type {
+		//	continue
+		//}
+		//deviceUid := strings.Trim(filters.Uid, " ")
+		//if deviceUid != "" && deviceUid != device.Id {
+		//	continue
+		//}
+
+		nodeNames := strings.Trim(filters.NodeName, " ")
+		if nodeNames != "" {
+			names := strings.Split(nodeNames, "|")
+			log.Info("GetAllGPUs names: ", names)
+			if !slices.Contains(names, device.NodeName) {
+				continue
+			}
 		}
-		deviceType := strings.Trim(filters.Type, " ")
-		if deviceType != "" && deviceType != device.Type {
-			continue
+
+		deviceTypes := strings.Trim(filters.Type, " ")
+		if deviceTypes != "" {
+			types := strings.Split(deviceTypes, "|")
+			log.Info("GetAllGPUs types: ", types)
+			if !slices.Contains(types, device.Type) {
+				continue
+			}
 		}
-		deviceUid := strings.Trim(filters.Uid, " ")
-		if deviceUid != "" && deviceUid != device.Id {
-			continue
+		deviceUids := strings.Trim(filters.Uid, " ")
+		if deviceUids != "" {
+			uids := strings.Split(deviceUids, "|")
+			log.Info("GetAllGPUs uids: ", uids)
+			if !slices.Contains(uids, device.NodeUid) {
+				continue
+			}
 		}
 		gpu.Uuid = device.Id
 		gpu.NodeName = device.NodeName

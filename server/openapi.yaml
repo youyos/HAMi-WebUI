@@ -119,6 +119,11 @@ components:
                     type: string
                 username:
                     type: string
+                requestedCpuCores:
+                    type: number
+                    format: float
+                requestedMemory:
+                    type: string
         ContainersReply:
             type: object
             properties:

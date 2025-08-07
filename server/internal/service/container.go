@@ -40,18 +40,55 @@ func (s *ContainerService) GetAllContainers(ctx context.Context, req *pb.GetAllC
 	}
 	var res = &pb.ContainersReply{Items: []*pb.ContainerReply{}}
 	for _, container := range containers {
-		if filters.Name != "" && !strings.Contains(container.Name, filters.Name) {
-			continue
+		//if filters.Name != "" && !strings.Contains(container.Name, filters.Name) {
+		//	continue
+		//}
+		//if filters.NodeName != "" && filters.NodeName != container.NodeName {
+		//	continue
+		//}
+		//if filters.Status != "" && filters.Status != container.Status {
+		//	continue
+		//}
+		//if filters.NodeUid != "" && filters.NodeUid != container.NodeUID {
+		//	continue
+		//}
+
+		names := strings.Trim(filters.Name, " ")
+		if names != "" {
+			nameList := strings.Split(names, "|")
+			log.Info("GetAllContainers names: ", nameList)
+			if !slices.Contains(nameList, container.Name) {
+				continue
+			}
 		}
-		if filters.NodeName != "" && filters.NodeName != container.NodeName {
-			continue
+
+		nodeNames := strings.Trim(filters.NodeName, " ")
+		if nodeNames != "" {
+			names := strings.Split(nodeNames, "|")
+			log.Info("GetAllContainers node names: ", names)
+			if !slices.Contains(names, container.NodeName) {
+				continue
+			}
 		}
-		if filters.Status != "" && filters.Status != container.Status {
-			continue
+
+		statuses := strings.Trim(filters.Status, " ")
+		if statuses != "" {
+			statusList := strings.Split(statuses, "|")
+			log.Info("GetAllContainers statuses: ", statusList)
+			if !slices.Contains(statusList, container.Status) {
+				continue
+			}
 		}
-		if filters.NodeUid != "" && filters.NodeUid != container.NodeUID {
-			continue
+
+		nodeUids := strings.Trim(filters.NodeUid, " ")
+		if nodeUids != "" {
+			uids := strings.Split(nodeUids, "|")
+			log.Info("GetAllContainers node UIDs: ", uids)
+			if !slices.Contains(uids, container.NodeUID) {
+				continue
+			}
 		}
+
 		priority := strings.Trim(filters.Priority, " ")
 		if priority != "" {
 			if (priority == "0" && container.Priority == "1") ||
@@ -140,6 +177,8 @@ func (s *ContainerService) GetContainer(ctx context.Context, req *pb.GetContaine
 	ctrReply.NodeUid = container.NodeUID
 	ctrReply.Namespace = container.Namespace
 	ctrReply.Priority = container.Priority
+	ctrReply.RequestedCpuCores = container.RequestedCpuCores
+	ctrReply.RequestedMemory = container.RequestedMemory
 	for _, containerDevice := range container.ContainerDevices {
 		if req.DeviceId != "" && req.DeviceId != containerDevice.UUID {
 			continue

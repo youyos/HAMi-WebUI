@@ -71,6 +71,8 @@ message ContainerReply {
   string shixun_name = 21;
   string role = 22;
   string username = 23;
+  float requested_cpu_cores = 24;
+  int64 requested_memory = 25;
 }
 
 message ContainersReply {

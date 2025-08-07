@@ -155,6 +155,10 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 		}
 		data = append(data, &poolData)
 	}
+
+	listData := data[0]
+	linkUrl, _ := database.Get("big_model_resource_pool_link_url")
+	listData.LinkUrl = linkUrl.(string)
 	return &pb.ResourcePoolListResponse{Data: data}, nil
 }
 
