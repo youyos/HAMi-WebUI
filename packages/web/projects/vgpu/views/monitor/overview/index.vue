@@ -1,12 +1,12 @@
 <template>
   <div class="home">
     <div class="home-left">
-      <Block title="显卡资源">
-        <template #extra>
+      <Block title="资源使用率">
+        <!-- <template #extra>
           <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
-        </template>
+        </template> -->
         <div class="card-overview">
           <div v-for="item in cardGaugeConfig.slice(0, 5)" :key="item.title">
             <Gauge v-bind="item" />
@@ -19,11 +19,11 @@
         </div>
       </Block>
       <Block title="资源总览">
-        <template #extra>
+        <!-- <template #extra>
           <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
-        </template>
+        </template> -->
         <ul class="resourceOverview">
           <li v-for="{ title, count, icon, to, unit } in resourceOverview" :key="title"
             :style="{ cursor: to ? 'pointer' : 'default' }" @click="sendRouteChange(to)">
@@ -156,7 +156,7 @@ const cardGaugeConfig = useInstantVector([
     title: '磁盘 使用率',
     percent: 0,
     query: `(sum(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})-sum(node_filesystem_free_bytes{fstype!~"tmpfs|overlay"})) / 1024 / 1024 / 1024`,
-    totalQuery: `avg(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
+    totalQuery: `sum(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
     percentQuery: ``,
     total: 0,
     used: 0,

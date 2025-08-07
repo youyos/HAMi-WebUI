@@ -13,7 +13,7 @@
 
 <script setup lang="jsx">
 import taskApi from '~/vgpu/api/task';
-import { calculateDuration, roundToDecimal, timeParse } from '@/utils';
+import { calculateDuration, roundToDecimal, timeParse, bytesToGB } from '@/utils';
 import { QuestionFilled } from '@element-plus/icons-vue';
 import api from '~/vgpu/api/task';
 import { ElMessage, ElMessageBox, ElPopover } from 'element-plus';
@@ -125,6 +125,16 @@ const columns = [
   {
     title: '所属节点',
     dataIndex: 'nodeName',
+  },
+  {
+    title: 'CPU',
+    dataIndex: 'requestedCpuCores',
+    render: ({ requestedCpuCores }) => `${requestedCpuCores}核`,
+  },
+  {
+    title: '内存',
+    dataIndex: 'requestedMemory',
+    render: ({ requestedMemory }) => `${bytesToGB(requestedMemory)}GiB`,
   },
   {
     title: '分配 vGPU',
