@@ -105,6 +105,7 @@ const columns = [
   {
     title: '实训名称',
     dataIndex: 'shixunName',
+    render: ({ shixunName }) => shixunName || '/',
   },
   {
     title: '使用者角色',
@@ -114,6 +115,7 @@ const columns = [
   {
     title: '用户名',
     dataIndex: 'role',
+    render: ({ role }) => role || '/',
   },
   {
     title: '所属资源池',

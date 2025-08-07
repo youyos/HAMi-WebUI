@@ -52,11 +52,11 @@ class pollApi {
   }
 
   getDetailNodeList(data) {
-    return {
+    return request({
       url: apiPrefix + '/v1/resource/pool/detail',
       method: 'post',
       data,
-    };
+    });
   }
 
   // getNodes(data) {

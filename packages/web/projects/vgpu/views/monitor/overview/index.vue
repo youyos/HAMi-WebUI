@@ -135,8 +135,8 @@ const cardGaugeConfig = useInstantVector([
   {
     title: 'CPU 使用率',
     percent: 0,
-    query: `avg(count(node_cpu_seconds_total{mode="idle"}) by (instance)) * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])))`,
-    totalQuery: `avg(count(node_cpu_seconds_total{mode="idle"}) by (instance))`,
+    query: `sum(count by(instance) (node_cpu_seconds_total{mode="idle"})*(1 - avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[1m]))))`,
+    totalQuery: `sum(count(node_cpu_seconds_total{mode="system"}) by (instance))`,
     percentQuery: ``,
     total: 0,
     used: 0,
@@ -145,8 +145,8 @@ const cardGaugeConfig = useInstantVector([
   {
     title: '内存 使用率',
     percent: 0,
-    query: `avg(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024`,
-    totalQuery: `avg(node_memory_MemTotal_bytes) / 1024 / 1024 / 1024`,
+    query: `(sum(node_memory_MemTotal_bytes) - sum(node_memory_MemAvailable_bytes)) / 1024 / 1024 / 1024`,
+    totalQuery: `sum(node_memory_MemTotal_bytes) / 1024 / 1024 / 1024`,
     percentQuery: ``,
     total: 0,
     used: 0,
@@ -155,7 +155,7 @@ const cardGaugeConfig = useInstantVector([
   {
     title: '磁盘 使用率',
     percent: 0,
-    query: `avg(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"} - node_filesystem_free_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
+    query: `(sum(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})-sum(node_filesystem_free_bytes{fstype!~"tmpfs|overlay"})) / 1024 / 1024 / 1024`,
     totalQuery: `avg(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
     percentQuery: ``,
     total: 0,
