@@ -64,7 +64,7 @@ import { onMounted, ref, watch, watchEffect } from 'vue';
 import useInstantVector from '~/vgpu/hooks/useInstantVector';
 import cardApi from '~/vgpu/api/card';
 import { QuestionFilled } from '@element-plus/icons-vue';
-import { roundToDecimal, timeParse, calculateDuration } from '@/utils';
+import { roundToDecimal, timeParse, calculateDuration, bytesToGB } from '@/utils';
 import taskApi from '~/vgpu/api/task';
 import BlockBox from '@/components/BlockBox.vue';
 import Gauge from '~/vgpu/components/gauge.vue';
@@ -164,11 +164,23 @@ const columns = [
     value: 'type',
   },
   {
-    label: '可分配算力',
+    label: '分配CPU',
+    value: 'requestedCpuCores',
+    render: ({ requestedCpuCores }) => <span>{requestedCpuCores} 核</span>,
+
+  },
+  {
+    label: '分配内存',
+    value: 'requestedMemory',
+    render: ({ requestedMemory }) => <span>{bytesToGB(requestedMemory)} 核</span>,
+
+  },
+  {
+    label: '分配算力',
     value: 'allocatedCores',
   },
   {
-    label: '可分配显存',
+    label: '分配显存',
     value: 'allocatedMem',
     render: ({ allocatedMem }) =>
       allocatedMem ? (

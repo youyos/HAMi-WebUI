@@ -569,8 +569,11 @@ export const clearEdges = (items) =>
 
 // 字节转GB
 export const bytesToGB = (bytes) => {
+  if (bytes === '' || bytes === undefined || bytes === null) {
+    return '';
+  }
   return Math.round(bytes / (1024 * 1024 * 1024));
-}
+};
 
 export function parseUrl(url) {
   const [pathname, queryString] = url.split('?');

@@ -43,6 +43,14 @@ class pollApi {
     });
   }
 
+  remove(data) {
+    return request({
+      url: apiPrefix + '/v1/resource/pool/removeNode',
+      method: 'POST',
+      data,
+    });
+  }
+
   getDetailNodeList(data) {
     return {
       url: apiPrefix + '/v1/resource/pool/detail',
