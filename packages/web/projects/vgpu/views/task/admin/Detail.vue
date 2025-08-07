@@ -298,6 +298,9 @@ onMounted(async () => {
   if (foundCard) {
     detail.value.type = foundCard.type;
   }
+  if (!detail.value.deviceIds?.length) {
+    lineConfig.value.splice(0, 2);
+  }
 
   // const start = new Date();
   // start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);

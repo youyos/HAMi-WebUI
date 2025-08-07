@@ -46,7 +46,7 @@
     :title="editId ? '编辑资源池' : '创建资源池'" width="1180" :before-close="handleClose">
     <el-row :wrap="false" style="align-items: center;">
       <span style="flex-shrink: 0; margin-right: 14px;">资源池名称</span>
-      <el-input style="flex: 1;" v-model="input" size="large" />
+      <el-input style="flex: 1;" v-model="input" size="large" maxlength="20" />
     </el-row>
     <div style="margin-top: 20px; margin-bottom: 10px;">
       <span>选择节点</span>
@@ -70,7 +70,9 @@
           </div>
         </div>
       </div>
-      <div class="wrap-center"></div>
+      <div class="wrap-center">
+        <svg-icon icon="arrow" />
+      </div>
       <div class="wrap-right">
         <div style="margin-top: 12px;"
           v-for="{ nodeIp, cpuCores, gpuNum, gpuMemory, totalMemory, diskSize }, index in nodeList.filter(e => nodeSelect.includes(e.nodeIp))"
@@ -304,5 +306,8 @@ onMounted(async () => {
 .wrap-center {
   width: 60px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

@@ -1,12 +1,12 @@
 <template>
   <div class="home">
     <div class="home-left">
-      <Block title="显卡资源">
-        <template #extra>
+      <Block title="资源使用率">
+        <!-- <template #extra>
           <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
-        </template>
+        </template> -->
         <div class="card-overview">
           <div v-for="item in cardGaugeConfig.slice(0, 5)" :key="item.title">
             <Gauge v-bind="item" />
@@ -19,11 +19,11 @@
         </div>
       </Block>
       <Block title="资源总览">
-        <template #extra>
+        <!-- <template #extra>
           <div class="all-btn" @click="sendRouteChange('/admin/vgpu/card/admin')">
             全部<svg-icon icon="more" style="margin-left: 4px" />
           </div>
-        </template>
+        </template> -->
         <ul class="resourceOverview">
           <li v-for="{ title, count, icon, to, unit } in resourceOverview" :key="title"
             :style="{ cursor: to ? 'pointer' : 'default' }" @click="sendRouteChange(to)">
@@ -156,7 +156,7 @@ const cardGaugeConfig = useInstantVector([
     title: '磁盘 使用率',
     percent: 0,
     query: `(sum(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})-sum(node_filesystem_free_bytes{fstype!~"tmpfs|overlay"})) / 1024 / 1024 / 1024`,
-    totalQuery: `avg(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
+    totalQuery: `sum(node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) / 1024 / 1024 / 1024`,
     percentQuery: ``,
     total: 0,
     used: 0,
@@ -227,7 +227,7 @@ const resourceOverview = ref([
     count: 0,
     icon: 'vgpu-pool-tab',
     unit: '个',
-    to: '/admin/vgpu/resource/admin'
+    to: '/admin/vgpu/poll/admin'
   },
   {
     title: 'CPU',
@@ -379,20 +379,20 @@ const nodeUsedTop = {
   title: '节点资源使用率 Top5',
   key: 'used',
   config: [
-    {
-      tab: 'CPU',
-      key: 'cpu',
-      nameKey: 'instance',
-      data: [],
-      query: 'topk(5, avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))',
-    },
-    {
-      tab: '内存',
-      key: 'internal',
-      nameKey: 'instance',
-      data: [],
-      query: 'topk(5, ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))',
-    },
+    // {
+    //   tab: 'CPU',
+    //   key: 'cpu',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: 'topk(5, avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))',
+    // },
+    // {
+    //   tab: '内存',
+    //   key: 'internal',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: 'topk(5, ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))',
+    // },
     {
       tab: '算力',
       key: 'core',
@@ -415,20 +415,20 @@ const nodeTotalTop = {
   title: '节点资源分配率 Top5',
   key: 'used',
   config: [
-    {
-      tab: 'CPU',
-      key: 'cpu',
-      nameKey: 'instance',
-      data: [],
-      query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
-    },
-    {
-      tab: '内存',
-      key: 'internal',
-      nameKey: 'instance',
-      data: [],
-      query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
-    },
+    // {
+    //   tab: 'CPU',
+    //   key: 'cpu',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: `topk(5, sum(hami_container_vcore_allocated) by (instance) / sum(hami_core_size) by (instance) * 100)`,
+    // },
+    // {
+    //   tab: '内存',
+    //   key: 'internal',
+    //   nameKey: 'instance',
+    //   data: [],
+    //   query: `topk(5, sum(hami_container_vmemory_allocated) by (instance) / sum(hami_memory_size) by (instance) * 100)`,
+    // },
     {
       tab: 'vGPU',
       key: 'vgpu',
