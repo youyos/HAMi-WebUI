@@ -264,6 +264,7 @@ const detailColumns = [
   {
     label: '节点状态',
     value: 'status',
+    width: 100,
     render: ({ isSchedulable, isExternal }) => {
       if (detail.value && detail.value.isSchedulable !== undefined) {
         return (

@@ -58,6 +58,7 @@ const columns = [
     title: '任务状态',
     dataIndex: 'status',
     render: ({ status, deviceIds }) => {
+      if (!status) return '/';
       const enums = {
         closed: { text: '已完成', color: '#999' },
         success: { text: '运行中', color: '#2563eb' },
@@ -119,12 +120,15 @@ const columns = [
   },
   {
     title: '所属资源池',
+    width: 100,
     dataIndex: 'resourcePools',
-    render: ({ resourcePools }) => `${resourcePools.join('、')}`,
+    render: ({ resourcePools }) => `${resourcePools?.length ? resourcePools.join('、') : '/'}`,
   },
   {
     title: '所属节点',
     dataIndex: 'nodeName',
+    render: ({ nodeName }) => nodeName || '/',
+
   },
   {
     title: 'CPU',
@@ -138,6 +142,7 @@ const columns = [
   },
   {
     title: '分配 vGPU',
+    width: 100,
     dataIndex: 'deviceIds',
     render: ({ deviceIds }) => {
       return (
@@ -178,6 +183,7 @@ const columns = [
 
   {
     title: '任务创建时间',
+    width: 140,
     dataIndex: 'createTime',
     render: ({ createTime }) => timeParse(createTime),
   },

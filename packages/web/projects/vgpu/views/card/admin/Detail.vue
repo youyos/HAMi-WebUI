@@ -198,6 +198,7 @@ const columns = [
   },
   {
     label: '使用模式',
+    width: 120,
     value: 'mode',
     render: ({ mode, type }) => (
         <el-tag disable-transitions>

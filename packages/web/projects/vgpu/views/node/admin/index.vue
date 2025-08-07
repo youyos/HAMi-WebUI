@@ -128,6 +128,7 @@ const columns = [
   },
   {
     title: '节点状态',
+    width: 100,
     dataIndex: 'isSchedulable',
     render: ({ isSchedulable, isExternal }) => (
       <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>
@@ -173,6 +174,7 @@ const columns = [
   },
   {
     title: '所属资源池',
+    width: 100,
     dataIndex: 'resourcePools',
     render: ({ resourcePools }) => `${resourcePools.join('、')}`,
   },

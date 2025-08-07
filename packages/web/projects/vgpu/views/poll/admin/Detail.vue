@@ -68,6 +68,7 @@ const columns = [
   },
   {
     title: '节点状态',
+    width: 100,
     dataIndex: 'isSchedulable',
     render: ({ isSchedulable, isExternal }) => (
       <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>
