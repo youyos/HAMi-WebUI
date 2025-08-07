@@ -105,6 +105,8 @@ func (s *ContainerService) GetAllContainers(ctx context.Context, req *pb.GetAllC
 		containerReply.NodeUid = container.NodeUID
 		containerReply.Namespace = container.Namespace
 		containerReply.Priority = container.Priority
+		containerReply.RequestedCpuCores = container.RequestedCpuCores
+		containerReply.RequestedMemory = container.RequestedMemory
 		for _, containerDevice := range container.ContainerDevices {
 			deviceID := containerDevice.UUID
 			if device, err := s.node.FindDeviceByAliasId(containerDevice.UUID); err == nil {
@@ -124,9 +126,6 @@ func (s *ContainerService) GetAllContainers(ctx context.Context, req *pb.GetAllC
 			containerReply.AllocatedMem = containerReply.AllocatedMem + containerDevice.Usedmem
 			containerReply.Type = containerDevice.Type
 			containerReply.AllocatedDevices++
-		}
-		if containerReply.DeviceIds == nil {
-			continue
 		}
 
 		resourcePoolNames, err := database.QueryResourceNamesByNodeName(container.NodeName)
