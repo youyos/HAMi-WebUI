@@ -1,6 +1,6 @@
 <template>
   <back-header>
-    资源池管理 > {{ route.query?.name || '' }}
+    资源池管理 > {{ route.query?.poolName || '' }}
   </back-header>
   <table-plus v-loading="loading" :dataSource="list" :columns="columns" :rowAction="rowAction" :hasPagination="false"
     style="margin-bottom: 15px; height: auto;" hideTag ref="table" static :hasActionBar="false">
@@ -37,10 +37,6 @@ const data = computed(() => {
     result.nodeUid = result.nodeUid + (result.nodeUid ? '|' : '') + node.uid
   });
   return result;
-})
-
-watchEffect(() => {
-  console.log(data.value, 'data')
 })
 
 const getList = async () => {

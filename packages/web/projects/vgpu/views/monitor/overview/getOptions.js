@@ -1,4 +1,4 @@
-import { timeParse } from '@/utils';
+import { timeParse, formatSmartPercentage } from '@/utils';
 import { cloneDeep } from 'lodash';
 import nodeApi from '~/vgpu/api/node';
 import { ElMessage } from 'element-plus';
@@ -323,16 +323,16 @@ export const getCardOptions = (list, chartWidth) => {
           rich: {
             cnt: {
               fontSize: 10,
-              color: '#999'
-            }
-          }
+              color: '#999',
+            },
+          },
         },
         labelLayout: function (params) {
           const isLeft = params.labelRect.x < chartWidth / 2;
           const points = params.labelLinePoints;
           points[2][0] = isLeft
-              ? params.labelRect.x
-              : params.labelRect.x + params.labelRect.width;
+            ? params.labelRect.x
+            : params.labelRect.x + params.labelRect.width;
           return {
             labelLinePoints: points,
           };
@@ -343,7 +343,6 @@ export const getCardOptions = (list, chartWidth) => {
         })),
       },
     ],
-
   };
 };
 
@@ -385,7 +384,7 @@ export const getLineOptions = ({
     grid: {
       top: 37, // 上边距
       bottom: 20, // 下边距
-      left: '7%', // 左边距
+      left: '10%', // 左边距
       right: 10, // 右边距
     },
     xAxis: {
@@ -496,7 +495,7 @@ export const getRangeOptions = (data) => {
             params[i].marker +
             params[i].seriesName +
             ' : ' +
-            (+params[i].value).toFixed(0) +
+            formatSmartPercentage(params[i].value) +
             `%<br/>`;
         }
 
@@ -506,7 +505,7 @@ export const getRangeOptions = (data) => {
     grid: {
       top: 37, // 上边距
       bottom: 20, // 下边距
-      left: '7%', // 左边距
+      left: '10%', // 左边距
       right: 10, // 右边距
     },
     xAxis: {

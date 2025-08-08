@@ -1,4 +1,4 @@
-import { timeParse } from '@/utils';
+import { timeParse, formatSmartPercentage } from '@/utils';
 
 export const getRangeOptions = ({ core = [], memory = [] }) => {
   return {
@@ -17,7 +17,7 @@ export const getRangeOptions = ({ core = [], memory = [] }) => {
             params[i].marker +
             params[i].seriesName +
             ' : ' +
-            (+params[i].value).toFixed(0) +
+            formatSmartPercentage(params[i].value) +
             `%<br/>`;
         }
 
@@ -27,7 +27,7 @@ export const getRangeOptions = ({ core = [], memory = [] }) => {
     grid: {
       top: 37, // 上边距
       bottom: 20, // 下边距
-      left: '7%', // 左边距
+      left: '10%', // 左边距
       right: 10, // 右边距
     },
     xAxis: {

@@ -65,10 +65,6 @@ import { getRangeOptions } from './getOptions';
 
 const props = defineProps(['data'])
 
-watchEffect(() => {
-  console.log(props.data, 'data2')
-})
-
 const end = new Date();
 const start = new Date();
 start.setTime(start.getTime() - 3600 * 1000);

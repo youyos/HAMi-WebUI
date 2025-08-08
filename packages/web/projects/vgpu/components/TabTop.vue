@@ -54,8 +54,6 @@ const getTopOptions = () => {
       formatter: function (params) {
         var res = params[0].name + '<br/>';
         for (var i = 0; i < params.length; i++) {
-        console.log(params[i].value, formatSmartPercentage(params[i].value), 'params')
-
           res +=
             params[i].marker +
             params[i].seriesName +
