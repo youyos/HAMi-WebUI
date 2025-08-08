@@ -481,14 +481,14 @@ const fetchRangeData = () => {
   }
 
 
-  cardApi
-    .getRangeVector({
-      ...params,
-      query: `sum({__name__=~"alert:.*:count"})`,
-    })
-    .then((res) => {
-      alarmData.value = res.data[0].values;
-    });
+  // cardApi
+  //   .getRangeVector({
+  //     ...params,
+  //     query: `sum({__name__=~"alert:.*:count"})`,
+  //   })
+  //   .then((res) => {
+  //     alarmData.value = res.data[0].values;
+  //   });
 
 };
 
