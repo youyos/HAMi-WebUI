@@ -41,19 +41,21 @@
     </div>
   </block-box>
 
-  <block-box v-for="{ title, data } in lineConfig" :key="title" :title="title">
-    <template #extra v-if="detail.type && detail.type.startsWith('NVIDIA')">
-      <time-picker v-model="times" type="datetimerange" size="small" />
-    </template>
-    <div style="height: 200px">
-      <template v-if="detail.type && !detail.type.startsWith('NVIDIA')">
-        <el-empty description="该设备厂商暂不支持任务维度监控" :image-size="60" />
+  <template v-for="({ title, data }, index) in lineConfig">
+    <block-box v-if="detail.deviceIds?.length || [2, 3].includes(index)" :key="title + index" :title="title">
+      <template #extra v-if="detail.type && detail.type.startsWith('NVIDIA')">
+        <time-picker v-model="times" type="datetimerange" size="small" />
       </template>
-      <template v-else>
-        <echarts-plus :options="getLineOptions({ data })" />
-      </template>
-    </div>
-  </block-box>
+      <div style="height: 200px">
+        <template v-if="detail.type && !detail.type.startsWith('NVIDIA')">
+          <el-empty description="该设备厂商暂不支持任务维度监控" :image-size="60" />
+        </template>
+        <template v-else>
+          <echarts-plus :options="getLineOptions({ data })" />
+        </template>
+      </div>
+    </block-box>
+  </template>
 </template>
 
 <script setup lang="jsx">
@@ -298,9 +300,9 @@ onMounted(async () => {
   if (foundCard) {
     detail.value.type = foundCard.type;
   }
-  if (!detail.value.deviceIds?.length) {
-    lineConfig.value.splice(0, 2);
-  }
+  // if (!detail.value.deviceIds?.length) {
+  //   lineConfig.value.splice(0, 2);
+  // }
 
   // const start = new Date();
   // start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
