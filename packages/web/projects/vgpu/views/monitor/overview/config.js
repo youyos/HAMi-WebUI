@@ -106,7 +106,7 @@ export const rangeConfigInit = [
       },
       {
         name: 'CPU',
-        query: `sum(hami_container_vcore_allocated) / sum(hami_core_size) * 100`,
+        query: `sum(hami_core_used) / sum(hami_core_size) * 100`,
         data: [],
         type: 'line',
         areaStyle: {
@@ -140,7 +140,7 @@ export const rangeConfigInit = [
       },
       {
         name: '内存',
-        query: `sum(hami_container_vmemory_allocated) / sum(hami_memory_size) * 100`,
+        query: `sum(hami_memory_used) / sum(hami_memory_size) * 100`,
         data: [],
         type: 'line',
         areaStyle: {
