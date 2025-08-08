@@ -60,6 +60,7 @@ const getTopOptions = () => {
         type: 'shadow',
       },
       formatter: function (params) {
+        // console.log(params, 'params')
         var res = params[0].name + '<br/>';
         for (var i = 0; i < params.length; i++) {
           res +=
@@ -111,7 +112,6 @@ onMounted(async () => {
         query: v.query,
       })
       .then((res) => {
-        console.log(v.query, res, 'res')
         currentConfig.value[i].data = res.data.map((item) => ({
           name: item.metric[v.nameKey],
           value: item.value,

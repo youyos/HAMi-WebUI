@@ -110,13 +110,14 @@ const columns = [
   },
   {
     title: '使用者角色',
-    dataIndex: 'nataskTypeme',
-    render: ({ taskType }) => taskType === 'big_model' ? '大模型' : '实训',
+    width: 100,
+    dataIndex: 'role',
+    render: ({ role }) => role || '/',
   },
   {
     title: '用户名',
-    dataIndex: 'role',
-    render: ({ role }) => role || '/',
+    dataIndex: 'username',
+    render: ({ username }) => username || '/',
   },
   {
     title: '所属资源池',

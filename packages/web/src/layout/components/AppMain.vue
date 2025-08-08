@@ -1,5 +1,5 @@
 <template>
-  <div id="content" :style="{ paddingLeft: hasParentWindow || isHome ? 0 : '20px' }">
+  <div id="content" :class="hasParentWindow && 'impose'">
     <!-- <transition name="fade-transform" mode="out-in"> -->
     <!-- <keep-alive> -->
     <router-view />
@@ -26,7 +26,15 @@ const isHome = computed(() => route.fullPath === '/admin/home');
   margin: 0;
   flex: 1;
   overflow: auto;
-
   height: 100%;
+  padding-left: 20px;
+
+  &.impose {
+    margin: 0 auto;
+    overflow: inherit;
+    max-width: 1200px;
+    padding-left: 0px;
+
+  }
 }
 </style>

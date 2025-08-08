@@ -92,21 +92,22 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
     li {
-      height: 80px;
+      // height: 80px;
       flex-shrink: 0;
       border-radius: 6px;
       background: #f5f7fa;
-      padding: 16px;
+      padding: 14px;
       display: flex;
+      align-items: center;
       //&:hover {
       //  color: var(--el-color-primary);
       //  cursor: pointer;
       //}
       .avatar {
         display: flex;
-        width: 48px;
-        height: 48px;
-        padding: 14px;
+        width: 30px;
+        height: 30px;
+        padding: 6px;
         justify-content: center;
         align-items: center;
         flex-shrink: 0;
@@ -117,16 +118,16 @@
           rgba(255, 255, 255, 0) 0%,
           #fff 100%
         );
-        margin-right: 16px;
+        margin-right: 8px;
       }
 
       .count {
         font-family: Roboto;
-        font-size: 20px;
+        font-size: 14px;
         font-style: normal;
         font-weight: 700;
         line-height: 100%; /* 20px */
-        margin-top: 10px;
+        margin-top: 8px;
       }
     }
   }
