@@ -25,7 +25,7 @@
         </div>
       </template>
     </div>
-    <template #footer>
+    <template v-if="nodeList && nodeList.length > 0" #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
       <el-button :loading="btnLoading" type="primary" @click="handleOk">确认</el-button>
     </template>

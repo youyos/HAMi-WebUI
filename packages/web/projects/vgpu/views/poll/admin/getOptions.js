@@ -1,4 +1,8 @@
-import { timeParse, formatSmartPercentage } from '@/utils';
+import {
+  timeParse,
+  formatSmartPercentage,
+  getFirstNonEmptyArray,
+} from '@/utils';
 
 export const getRangeOptions = ({
   core = [],
@@ -6,6 +10,8 @@ export const getRangeOptions = ({
   cpu = [],
   internal = [],
 }) => {
+  const xData = getFirstNonEmptyArray([core, memory, cpu, internal]);
+
   return {
     legend: {
       // data: [],
@@ -38,7 +44,7 @@ export const getRangeOptions = ({
     },
     xAxis: {
       type: 'category',
-      data: core.map((item) => timeParse(+item.timestamp)),
+      data: xData.map((item) => timeParse(+item.timestamp)),
       axisLabel: {
         formatter: function (value) {
           return timeParse(value, 'HH:mm');

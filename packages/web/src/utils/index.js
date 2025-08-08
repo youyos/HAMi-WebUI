@@ -613,3 +613,12 @@ export function formatSmartPercentage(value) {
 
   return parseFloat(rounded).toString(); // 去除多余的 0 和小数点
 }
+
+export function getFirstNonEmptyArray(arrays, defaultValue = []) {
+  for (const arr of arrays) {
+    if (arr && arr.length > 0) {
+      return arr;
+    }
+  }
+  return defaultValue;
+}
