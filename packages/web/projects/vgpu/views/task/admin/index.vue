@@ -119,12 +119,12 @@ const columns = [
     dataIndex: 'username',
     render: ({ username }) => username || '/',
   },
-  {
-    title: '所属资源池',
-    width: 100,
-    dataIndex: 'resourcePools',
-    render: ({ resourcePools }) => `${resourcePools?.length ? resourcePools.join('、') : '/'}`,
-  },
+  // {
+  //   title: '所属资源池',
+  //   width: 100,
+  //   dataIndex: 'resourcePools',
+  //   render: ({ resourcePools }) => `${resourcePools?.length ? resourcePools.join('、') : '/'}`,
+  // },
   {
     title: '所属节点',
     dataIndex: 'nodeName',
