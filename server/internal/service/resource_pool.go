@@ -127,6 +127,17 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 		return nil, errors.New("获取资源池列表失败")
 	}
 
+	// Sort the resourcePoolList to put ID 1 first
+	sort.Slice(resourcePoolList, func(i, j int) bool {
+		if resourcePoolList[i].Id == 1 {
+			return true
+		}
+		if resourcePoolList[j].Id == 1 {
+			return false
+		}
+		return resourcePoolList[i].CreateTime.After(resourcePoolList[j].CreateTime)
+	})
+
 	var data []*pb.ResourcePoolListData
 	k8sNodes := s.getK8sNodes(ctx)
 	for _, resourcePool := range resourcePoolList {

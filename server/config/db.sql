@@ -17,4 +17,4 @@ create table nodes(
                       update_time timestamp default current_timestamp on update current_timestamp
 );
 
-INSERT INTO hami.resource_pool (pool_name) VALUES ('大模型资源池');
+INSERT INTO hami.resource_pool (id, pool_name) VALUES (1, '大模型资源池');

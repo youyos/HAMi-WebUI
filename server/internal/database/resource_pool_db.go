@@ -58,7 +58,7 @@ func QueryResourcePoolById(poolId int64) (*ResourcePool, error) {
 
 func QueryResourcePoolListAll() ([]*ResourcePool, error) {
 	// 执行查询
-	rows, err := db.Query("SELECT id, pool_name, create_time, update_time FROM resource_pool order by id asc")
+	rows, err := db.Query("SELECT id, pool_name, create_time, update_time FROM resource_pool order by create_time desc")
 	if err != nil {
 		log.Infof("Query failed: %v", err)
 		return nil, err
