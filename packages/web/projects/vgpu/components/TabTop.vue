@@ -2,23 +2,14 @@
   <block-box :title="title">
     <template #extra>
       <el-radio-group v-model="tabActive" size="small" @change="handleTabChange">
-        <el-radio-button
-          v-for="{ tab, key } in config"
-          :label="tab"
-          :value="key"
-        />
+        <el-radio-button v-for="{ tab, key } in config" :label="tab" :value="key" />
       </el-radio-group>
     </template>
 
-    <echarts-plus
-      :options="
-        getTopOptions(
-          currentConfig.find((item) => item.key === tabActive)?.data || [],
-        )
-      "
-      :onClick="handleClick"
-      style="min-height: 250px; height: 100%"
-    />
+    <echarts-plus :options="getTopOptions(
+      currentConfig.find((item) => item.key === tabActive)?.data || [],
+    )
+      " :onClick="handleClick" style="min-height: 250px; height: 100%" />
   </block-box>
 </template>
 
@@ -28,6 +19,7 @@ import { onMounted, ref } from 'vue';
 import EchartsPlus from '@/components/Echarts-plus.vue';
 import cardApi from '~/vgpu/api/card';
 import { cloneDeep } from 'lodash';
+import { formatSmartPercentage } from '@/utils';
 
 const props = defineProps({
   title: String,
@@ -65,7 +57,7 @@ const getTopOptions = () => {
           res +=
             params[i].marker +
             params[i].seriesName +
-            (+params[i].value).toFixed(0) +
+            formatSmartPercentage(params[i].value) +
             `${config.unit || '%'}<br/>`;
         }
         return res;
@@ -111,7 +103,6 @@ onMounted(async () => {
         query: v.query,
       })
       .then((res) => {
-        console.log(v.query, res, 'res')
         currentConfig.value[i].data = res.data.map((item) => ({
           name: item.metric[v.nameKey],
           value: item.value,

@@ -588,3 +588,37 @@ export function parseUrl(url) {
 
   return { pathname, query };
 }
+
+export function formatSmartPercentage(value) {
+  if (value === 0) return '0';
+
+  // 整数直接返回
+  if (Number.isInteger(value)) return value.toString();
+
+  const str = value.toString();
+  const decimal = str.split('.')[1] || '';
+
+  // 统计前导0的个数
+  let leadingZeros = 0;
+  for (const char of decimal) {
+    if (char === '0') {
+      leadingZeros++;
+    } else {
+      break;
+    }
+  }
+
+  const keep = leadingZeros + 2; // 0 的个数 + 1 位有效数字 + 1 位补充位
+  const rounded = value.toFixed(keep);
+
+  return parseFloat(rounded).toString(); // 去除多余的 0 和小数点
+}
+
+export function getFirstNonEmptyArray(arrays, defaultValue = []) {
+  for (const arr of arrays) {
+    if (arr && arr.length > 0) {
+      return arr;
+    }
+  }
+  return defaultValue;
+}

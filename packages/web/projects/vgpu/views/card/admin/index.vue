@@ -66,6 +66,7 @@ const columns = [
   },
   {
     title: '使用模式',
+    width: 120,
     dataIndex: 'mode',
     render: ({ mode, type }) => (
         <el-tag disable-transitions>
@@ -79,6 +80,7 @@ const columns = [
   },
   {
     title: '所属资源池',
+    width: 100,
     dataIndex: 'resourcePools',
     render: ({ resourcePools }) => `${resourcePools.join('、')}`,
   },
@@ -97,6 +99,7 @@ const columns = [
   },
   {
     title: '算力(已分配/总量)',
+    width: 120,
     dataIndex: 'used',
     render: ({ coreTotal, coreUsed, isExternal }) => (
         <span>
@@ -107,6 +110,7 @@ const columns = [
   {
     title: '显存(已分配/总量)',
     dataIndex: 'w',
+    width: 120,
     render: ({ memoryTotal, memoryUsed, isExternal }) => (
         <span>
       {isExternal ? '--' : roundToDecimal(memoryUsed / 1024, 1)}/

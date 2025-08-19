@@ -198,6 +198,7 @@ const columns = [
   },
   {
     label: '使用模式',
+    width: 120,
     value: 'mode',
     render: ({ mode, type }) => (
         <el-tag disable-transitions>
@@ -207,26 +208,26 @@ const columns = [
   }
 ];
 
-const cp = useInstantVector(
-  [
-    {
-      label: 'vGPU超配',
-      count: '0',
-      query: `avg(sum(hami_vgpu_count{node=~"$node"}) by (instance))`,
-    },
-    {
-      label: '算力超配',
-      count: '0',
-      query: `avg(sum(hami_vcore_scaling{node=~"$node"}) by (instance))`,
-    },
-    {
-      label: '显存超配',
-      count: '1.5',
-      query: `avg(sum(hami_vmemory_scaling{node=~"$node"}) by (instance))`,
-    },
-  ],
-  (query) => query.replaceAll('$node', props.detail.name),
-);
+// const cp = useInstantVector(
+//   [
+//     {
+//       label: 'vGPU超配',
+//       count: '0',
+//       query: `avg(sum(hami_vgpu_count{node=~"$node"}) by (instance))`,
+//     },
+//     {
+//       label: '算力超配',
+//       count: '0',
+//       query: `avg(sum(hami_vcore_scaling{node=~"$node"}) by (instance))`,
+//     },
+//     {
+//       label: '显存超配',
+//       count: '1.5',
+//       query: `avg(sum(hami_vmemory_scaling{node=~"$node"}) by (instance))`,
+//     },
+//   ],
+//   (query) => query.replaceAll('$node', props.detail.name),
+// );
 
 const gaugeConfig = useInstantVector(
   [

@@ -25,7 +25,7 @@
         </div>
       </template>
     </div>
-    <template #footer>
+    <template v-if="nodeList && nodeList.length > 0" #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
       <el-button :loading="btnLoading" type="primary" @click="handleOk">确认</el-button>
     </template>
@@ -128,6 +128,7 @@ const columns = [
   },
   {
     title: '节点状态',
+    width: 100,
     dataIndex: 'isSchedulable',
     render: ({ isSchedulable, isExternal }) => (
       <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>
@@ -173,6 +174,7 @@ const columns = [
   },
   {
     title: '所属资源池',
+    width: 100,
     dataIndex: 'resourcePools',
     render: ({ resourcePools }) => `${resourcePools.join('、')}`,
   },

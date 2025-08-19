@@ -21,7 +21,7 @@
           </div>
         </div>
         <div class="right">
-          <el-button @click="sendRouteChange(`/admin/vgpu/poll/admin/${poolId}?name=${poolName}`)"
+          <el-button @click="sendRouteChange(`/admin/vgpu/poll/admin/${poolId}?poolName=${poolName}`)"
             type="text">查看详情</el-button>
           <template v-if="index === 0 && currentPage === 1">
             <el-button @click="sendRouteChange(linkUrl, 'open')" type="text">配置</el-button>
@@ -136,10 +136,6 @@ const paginatedList = computed(() => {
   const end = start + pageSize.value
   return list.value.slice(start, end)
 })
-
-// watchEffect(()=>{
-//   console.log(currentPage.value, pageSize.value, 88)
-// })
 
 // 分页大小变化
 const handleSizeChange = (val) => {

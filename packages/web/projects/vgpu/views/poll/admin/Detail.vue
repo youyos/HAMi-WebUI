@@ -1,6 +1,6 @@
 <template>
   <back-header>
-    资源池管理 > {{ route.query?.name || '' }}
+    资源池管理 > {{ route.query?.poolName || '' }}
   </back-header>
   <table-plus v-loading="loading" :dataSource="list" :columns="columns" :rowAction="rowAction" :hasPagination="false"
     style="margin-bottom: 15px; height: auto;" hideTag ref="table" static :hasActionBar="false">
@@ -39,10 +39,6 @@ const data = computed(() => {
   return result;
 })
 
-watchEffect(() => {
-  console.log(data.value, 'data')
-})
-
 const getList = async () => {
   loading.value = true
   const res = await pollApi.getDetailNodeList({ pool_id: route.params.uid })
@@ -68,6 +64,7 @@ const columns = [
   },
   {
     title: '节点状态',
+    width: 100,
     dataIndex: 'isSchedulable',
     render: ({ isSchedulable, isExternal }) => (
       <el-tag disable-transitions type={isExternal ? 'warning' : (isSchedulable ? 'success' : 'danger')}>

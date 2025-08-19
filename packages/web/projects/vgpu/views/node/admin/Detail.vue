@@ -240,7 +240,7 @@ const gaugeConfig = useInstantVector(
       percent: 0,
       query: ``,
       totalQuery: ``,
-      percentQuery: `avg(sum(hami_container_vcore_allocated{node=~"$node"}) by (instance) / sum(hami_core_size{node=~"$node"}) by (instance) * 100)`,
+      percentQuery: `avg(sum(hami_core_used{node=~"$node"}) by (instance) / sum(hami_core_size{node=~"$node"}) by (instance) * 100)`,
       total: 0,
       used: 0,
       unit: '核',
@@ -250,7 +250,7 @@ const gaugeConfig = useInstantVector(
       percent: 0,
       query: ``,
       totalQuery: ``,
-      percentQuery: `avg(sum(hami_container_vmemory_allocated{node=~"$node"}) by (instance) / sum(hami_memory_size{node=~"$node"}) by (instance) * 100)`,
+      percentQuery: `avg(sum(hami_memory_used{node=~"$node"}) by (instance) / sum(hami_memory_size{node=~"$node"}) by (instance) * 100)`,
       total: 0,
       used: 0,
       unit: 'GiB',
@@ -264,6 +264,7 @@ const detailColumns = [
   {
     label: '节点状态',
     value: 'status',
+    width: 100,
     render: ({ isSchedulable, isExternal }) => {
       if (detail.value && detail.value.isSchedulable !== undefined) {
         return (

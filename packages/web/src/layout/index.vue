@@ -1,6 +1,7 @@
 <template>
   <TopBar v-if="!hasParentWindow" />
-  <div class="page" :style="{ padding: hasParentWindow ? '20px 30px' : '76px 20px 20px 20px' }">
+  <div class="page"
+    :style="{ padding: hasParentWindow ? '20px 30px' : '76px 20px 20px 20px', height: hasParentWindow ? 'auto' : '100vh' }">
     <sidebar v-if="!hasParentWindow && !isNoSidebar()" />
     <app-main />
   </div>

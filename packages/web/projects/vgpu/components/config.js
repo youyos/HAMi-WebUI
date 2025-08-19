@@ -1,4 +1,4 @@
-import { timeParse } from '@/utils';
+import { timeParse, formatSmartPercentage } from '@/utils';
 
 export default ({ percent, title, unit = '%' }) => {
   const value = percent.toFixed(1);
@@ -232,7 +232,7 @@ export const getLineOptions = ({ data = [], unit = '%' }) => {
         var res = params[0].name + '<br/>';
         for (var i = 0; i < params.length; i++) {
           res +=
-            params[i].marker + (+params[i].value).toFixed(0) + ` ${unit}<br/>`;
+            params[i].marker + formatSmartPercentage(params[i].value) + ` ${unit}<br/>`;
         }
         return res;
       },
@@ -240,7 +240,7 @@ export const getLineOptions = ({ data = [], unit = '%' }) => {
     grid: {
       top: 7, // 上边距
       bottom: 20, // 下边距
-      left: '7%', // 左边距
+      left: '10%', // 左边距
       right: 10, // 右边距
     },
     xAxis: {
@@ -258,7 +258,7 @@ export const getLineOptions = ({ data = [], unit = '%' }) => {
     series: [
       {
         data: data.map((item) => {
-          return item.value.toFixed(1);
+          return item.value;
         }),
         type: 'line',
         areaStyle: {
