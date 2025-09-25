@@ -30,17 +30,23 @@ func NewResourcePoolService(uc *biz.NodeUsecase, pod *biz.PodUseCase, summary *b
 func (s *ResourcePoolService) Create(ctx context.Context, req *pb.ResourcePoolCreateRequest) (*pb.BaseResponse, error) {
 	log.Info("CreateResourcePool called", req)
 	poolName := req.PoolName
+	poolType := req.PoolType
 
 	if database.ExistsResourcePoolByPoolName(poolName) {
 		return &pb.BaseResponse{Code: 500, Message: "资源池：'" + poolName + "'已经存在"}, nil
 	}
 
-	poolId, err := database.InsertResourcePool(poolName)
+	poolId, err := database.InsertResourcePool(poolName, poolType)
 	if err != nil {
 		return &pb.BaseResponse{Code: 500, Message: poolName + "创建资源池失败"}, nil
 	}
 
-	nodes := make([]*database.NodeInfo, 0, len(req.Nodes))
+	nodeSize := len(req.Nodes)
+	if poolType != 2 && nodeSize > 1 {
+		return &pb.BaseResponse{Code: 500, Message: "非多机多卡只能选择一个节点"}, nil
+	}
+
+	nodes := make([]*database.NodeInfo, 0, nodeSize)
 	for _, node := range req.Nodes {
 		nodes = append(nodes, &database.NodeInfo{
 			Name: node.NodeName,
@@ -58,8 +64,9 @@ func (s *ResourcePoolService) Create(ctx context.Context, req *pb.ResourcePoolCr
 }
 
 func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUpdateRequest) (*pb.BaseResponse, error) {
-	log.Info("UpdateResourcePool called", req)
+	log.Info("UpdateResourcePool called ", req)
 	poolId := req.PoolId
+	poolType := req.PoolType
 	resourcePool, err := database.QueryResourcePoolById(poolId)
 	if err != nil {
 		return &pb.BaseResponse{Code: 500, Message: "更新资源池失败"}, nil
@@ -74,7 +81,12 @@ func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUp
 		return &pb.BaseResponse{Code: 500, Message: "更新资源池失败"}, nil
 	}
 
-	nodes := make([]*database.NodeInfo, 0, len(req.Nodes))
+	nodeSize := len(req.Nodes)
+	if poolType != 2 && nodeSize > 1 {
+		return &pb.BaseResponse{Code: 500, Message: "非多机多卡只能选择一个节点"}, nil
+	}
+
+	nodes := make([]*database.NodeInfo, 0, nodeSize)
 	for _, node := range req.Nodes {
 		nodes = append(nodes, &database.NodeInfo{
 			Name: node.NodeName,
@@ -82,7 +94,7 @@ func (s *ResourcePoolService) Update(ctx context.Context, req *pb.ResourcePoolUp
 		})
 	}
 	_, err = database.InsertNodes(poolId, nodes)
-	_, err = database.UpdateResourcePool(poolId, req.PoolName)
+	_, err = database.UpdateResourcePool(poolId, req.PoolName, poolType)
 	if err != nil {
 		return &pb.BaseResponse{Code: 500, Message: "更新资源池失败"}, nil
 	}
@@ -144,6 +156,7 @@ func (s *ResourcePoolService) List(ctx context.Context, req *pb.ResourcePoolList
 		var poolData pb.ResourcePoolListData
 		poolData.PoolId = resourcePool.Id
 		poolData.PoolName = resourcePool.PoolName
+		poolData.PoolType = resourcePool.PoolType
 
 		dbNodes, _ := database.QueryNodesByPoolId(resourcePool.Id)
 		poolData.NodeNum = int64(len(dbNodes))

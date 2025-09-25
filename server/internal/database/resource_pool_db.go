@@ -12,6 +12,7 @@ import (
 type ResourcePool struct {
 	Id         int64     `db:"id"`
 	PoolName   string    `db:"pool_name"`
+	PoolType   int32     `db:"pool_type"`
 	CreateTime time.Time `db:"create_time"`
 	UpdateTime time.Time `db:"update_time"`
 }
@@ -42,8 +43,8 @@ func ExistsResourcePoolByPoolName(poolName string) bool {
 
 func QueryResourcePoolById(poolId int64) (*ResourcePool, error) {
 	var pool ResourcePool
-	err := db.QueryRow("SELECT id, pool_name, create_time, update_time FROM resource_pool WHERE id = ?", poolId).
-		Scan(&pool.Id, &pool.PoolName, &pool.CreateTime, &pool.UpdateTime)
+	err := db.QueryRow("SELECT id, pool_name, pool_type, create_time, update_time FROM resource_pool WHERE id = ?", poolId).
+		Scan(&pool.Id, &pool.PoolName, &pool.PoolType, &pool.CreateTime, &pool.UpdateTime)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			log.Infof("No record found with id %d", poolId)
@@ -58,7 +59,7 @@ func QueryResourcePoolById(poolId int64) (*ResourcePool, error) {
 
 func QueryResourcePoolListAll() ([]*ResourcePool, error) {
 	// 执行查询
-	rows, err := db.Query("SELECT id, pool_name, create_time, update_time FROM resource_pool order by create_time desc")
+	rows, err := db.Query("SELECT id, pool_name, pool_type, create_time, update_time FROM resource_pool order by create_time desc")
 	if err != nil {
 		log.Infof("Query failed: %v", err)
 		return nil, err
@@ -71,7 +72,7 @@ func QueryResourcePoolListAll() ([]*ResourcePool, error) {
 	// 遍历每一行
 	for rows.Next() {
 		var pool ResourcePool
-		err := rows.Scan(&pool.Id, &pool.PoolName, &pool.CreateTime, &pool.UpdateTime)
+		err := rows.Scan(&pool.Id, &pool.PoolName, &pool.PoolType, &pool.CreateTime, &pool.UpdateTime)
 		if err != nil {
 			log.Infof("Scan failed: %v", err)
 			return nil, err
@@ -211,10 +212,10 @@ func QueryResourceNamesByNodeName(nodeName string) ([]string, error) {
 	return resourcePoolNames, nil
 }
 
-func InsertResourcePool(poolName string) (int64, error) {
-	querySql := "INSERT INTO resource_pool(pool_name) VALUES (?)"
+func InsertResourcePool(poolName string, poolType int32) (int64, error) {
+	querySql := "INSERT INTO resource_pool(pool_name, pool_type) VALUES (?, ?)"
 
-	result, err := db.Exec(querySql, poolName)
+	result, err := db.Exec(querySql, poolName, poolType)
 	if err != nil {
 		log.Infof("Failed to insert record: %v", err)
 		return 0, err
@@ -229,9 +230,9 @@ func InsertResourcePool(poolName string) (int64, error) {
 	return id, nil
 }
 
-func UpdateResourcePool(poolId int64, poolName string) (int64, error) {
-	updateSql := "UPDATE resource_pool SET pool_name=? where id=?"
-	result, err := db.Exec(updateSql, poolName, poolId)
+func UpdateResourcePool(poolId int64, poolName string, poolType int32) (int64, error) {
+	updateSql := "UPDATE resource_pool SET pool_name=?, pool_type=? where id=?"
+	result, err := db.Exec(updateSql, poolName, poolType, poolId)
 	if err != nil {
 		log.Infof("Failed to update record: %v", err)
 		return 0, err
@@ -259,6 +260,7 @@ func InsertNodes(poolId int64, nodes []*NodeInfo) (int64, error) {
 		strings.Join(valueStrings, ","),
 	)
 
+	log.Info("InsertNodes: ", insertSql)
 	result, err := db.Exec(insertSql, valueArgs...)
 	if err != nil {
 		log.Infof("Batch insert failed: %v", err)

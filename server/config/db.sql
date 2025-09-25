@@ -18,3 +18,6 @@ create table nodes(
 );
 
 INSERT INTO hami.resource_pool (id, pool_name) VALUES (1, '大模型资源池');
+
+
+alter table resource_pool add column pool_type int(8) default 0 comment '类型';

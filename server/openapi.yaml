@@ -289,6 +289,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Nodes'
+                poolType:
+                    type: integer
+                    format: int32
         ResourcePoolDeleteRequest:
             type: object
             properties:
@@ -331,6 +334,9 @@ components:
                         $ref: '#/components/schemas/Nodes'
                 linkUrl:
                     type: string
+                poolType:
+                    type: integer
+                    format: int32
         ResourcePoolListResponse:
             type: object
             properties:
@@ -349,6 +355,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Nodes'
+                poolType:
+                    type: integer
+                    format: int32
         Status:
             type: object
             properties:
